@@ -676,7 +676,7 @@ static const char *vgahwSymbols[] = {
     "vgaHWSave",
     "vgaHWUnlock",
     "vgaHWVBlankKGA",
-    "vgaHWddc1SetSpeed",
+    "vgaHWddc1SetSpeedWeak",
     NULL
 };
 
