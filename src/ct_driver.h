@@ -274,7 +274,11 @@ typedef struct _CHIPSRec {
     PCITAG		PciTag;
     int			Chipset;
     EntityInfoPtr       pEnt;
-    IOADDRESS		PIOBase;
+#if XF86_VERSION_CURRENT > XF86_VERSION_NUMERIC(4,1,0,0,0)
+      IOADDRESS		PIOBase;
+#else
+    int			PIOBase; /* unused variable : here for compatibility reason with newer version */
+#endif
     CARD32		IOAddress;
     unsigned long	FbAddress;
     unsigned int	IOBase;
@@ -362,6 +366,7 @@ typedef struct _CHIPSRec {
     chipsWriteIOSSPtr	writeIOSS;
     Bool cursorDelay;
     unsigned int viewportMask;
+    Bool dualEndianAp;
 } CHIPSRec;
 
 typedef struct _CHIPSi2c {
@@ -431,6 +436,10 @@ void     chipsRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void     chipsRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void     chipsPointerMoved(int index, int x, int y);
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+# define BE_SWAP_APRETURE(pScrn,cPtr) \
+           ((pScrn->bitsPerPixel == 16) && cPtr->dualEndianAp)
+#endif
 
 /*
  * Some macros for switching display channels. NOTE... It appears that we

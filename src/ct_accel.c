@@ -153,7 +153,19 @@ static void  CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		unsigned char *dst, int dstwidth, int bpp, int depth);
 #endif
 #endif
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+# define BE_SWAP(pScrn,cPtr,x) \
+  if (BE_SWAP_APRETURE(pScrn,cPtr)) { \
+       CARD8 XR0A = cPtr->readXR(cPtr,0x0A); \
+       cPtr->writeXR(cPtr, 0x0A, (XR0A & 0xcf) | x); \
+  }
 
+# define BE_SWAPON(pScrn,cPtr) BE_SWAP(pScrn,cPtr,0x10)
+# define BE_SWAPOFF(pScrn,cPtr) BE_SWAP(pScrn,cPtr,0x0)
+#else
+# define BE_SWAPON(pScrn,cPtr)
+# define BE_SWAPOFF(pScrn,cPtr)
+#endif
 
 Bool 
 CTNAME(AccelInit)(ScreenPtr pScreen)
@@ -277,17 +289,24 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 
 #ifdef CHIPS_HIQV 
     infoPtr->CPUToScreenColorExpandFillFlags =
-	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_QWORD |
+# if X_BYTE_ORDER != X_BIG_ENDIAN
+	BIT_ORDER_IN_BYTE_MSBFIRST |
+# endif
+	CPU_TRANSFER_PAD_QWORD |
 	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
 	ROP_NEEDS_SOURCE;
-#ifdef UNDOCUMENTED_FEATURE
+# ifdef UNDOCUMENTED_FEATURE
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST
 	| LEFT_EDGE_CLIPPING;
-#endif        
+# endif        
     if (cAcl->BitsPerPixel == 24) {
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
-#ifdef UNDOCUMENTED_FEATURE
+# ifdef UNDOCUMENTED_FEATURE
 	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
+# endif
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	if (BE_SWAP_APRETURE(pScrn,cPtr))
+	    infoPtr->CPUToScreenColorExpandFillFlags |= SYNC_AFTER_COLOR_EXPAND;
 #endif
     }
     /* The ct65550 has problems with transparency which leads to video
@@ -295,11 +314,11 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
      */
     if (!(cPtr->Flags & ChipsColorTransparency)) {
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_TRANSPARENCY;
-#ifdef UNDOCUMENTED_FEATURE
+# ifdef UNDOCUMENTED_FEATURE
 	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_TRANSPARENCY;
-#endif
+# endif
     }
-#else
+#else /* CHIPS_HIQV */
     infoPtr->CPUToScreenColorExpandFillFlags =
 	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_DWORD |
 	ROP_NEEDS_SOURCE;
@@ -309,7 +328,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
     if (cAcl->BitsPerPixel == 24)
 	infoPtr->CPUToScreenColorExpandFillFlags |= TRIPLE_BITS_24BPP |
 	    RGB_EQUAL | NO_PLANEMASK;
-#endif
+#endif /* CHIPS_HIQV */
 
     infoPtr->SetupForCPUToScreenColorExpandFill =
 		CTNAME(SetupForCPUToScreenColorExpandFill);
@@ -458,6 +477,7 @@ CTNAME(Sync)(ScrnInfoPtr pScrn)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     DEBUG_P("sync");
     ctBLTWAIT;
+    BE_SWAPON(pScrn,cPtr);
 }
 
 static void
@@ -892,6 +912,9 @@ CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
     DEBUG_P("SetupForCPUToScreenColorExpandFill");
+
+    BE_SWAPOFF(pScrn,cPtr);
+    
     ctBLTWAIT;
     cAcl->CommandFlags = 0;
     if (bg == -1) {
@@ -1099,7 +1122,11 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
     int i, j, max = 0, funcNo, pad, dwords, bpp = cAcl->BitsPerPixel;
     int *current;
     StippleScanlineProcPtr StippleFunc;
+    static StippleScanlineProcPtr *StippleTab = NULL;
     unsigned char *data, *srcPtr, *dstPtr;
+
+    if (!StippleTab)
+        StippleTab = XAAGetStippleScanlineFuncMSBFirst();
 
     DEBUG_P("CacheMonoStipple");
     if((h <= 128) && (w <= 128 * bpp / 8)) {
@@ -1153,7 +1180,7 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
     pad = (((pCache->w * bpp) + 31) >> 5) << 2;
     dstPtr = data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
     srcPtr = (unsigned char*)pPix->devPrivate.ptr;
-    StippleFunc = XAAStippleScanlineFuncMSBFirst[funcNo];
+    StippleFunc = StippleTab[funcNo];
     
     dwords = ((pCache->w * bpp) >> 5) >> 3;
     cAcl->SlotWidth = dwords << 2;
@@ -1703,8 +1730,10 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	ctSETPITCH(srcpitch, byteWidthDst);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
+	BE_SWAPOFF(pScrn,cPtr);
 	MoveDataToCPU((unsigned char *)cAcl->BltDataWindow,
 		 (unsigned char *)dst, dstwidth, 16384, h, dwords);
+	BE_SWAPON(pScrn,cPtr);
 
     } else {
 	unsigned int vert = h;
@@ -1714,8 +1743,10 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	ctSETPITCH(srcpitch << 1, byteWidthDst << 1);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
+	BE_SWAPOFF(pScrn,cPtr);
 	MoveDataToCPU((unsigned char *)cAcl->BltDataWindow,
 		 (unsigned char *)dst, dstwidth<<1, 16384, h, dwords);
+	BE_SWAPON(pScrn,cPtr);
 
 	h = vert  >> 1;
 	dst += dstwidth;
@@ -1729,8 +1760,10 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	ctSETSRCADDR(srcaddr);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
+	BE_SWAPFF(pScrn,cPtr);
 	MoveDataToCPU((unsigned char *)cAcl->BltDataWindow,
 		 (unsigned char *)dst, dstwidth<<1, 16384, h, dwords);
+	BE_SWAPON(pScrn,cPtr);
     }
 
     cPtr->AccelInfoRec->NeedToSync = TRUE;

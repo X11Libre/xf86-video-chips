@@ -158,7 +158,8 @@ static void     chipsLock(ScrnInfoPtr pScrn);
 static void     chipsUnlock(ScrnInfoPtr pScrn);
 static void     chipsClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock);
 static void     chipsClockLoad(ScrnInfoPtr pScrn, CHIPSClockPtr Clock);
-static Bool     chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock);
+static Bool     chipsClockFind(ScrnInfoPtr pScrn, DisplayModePtr mode,
+			       int no, CHIPSClockPtr Clock);
 static void     chipsCalcClock(ScrnInfoPtr pScrn, int Clock,
 				 unsigned char *vclk);
 static int      chipsGetHWClock(ScrnInfoPtr pScrn);
@@ -581,7 +582,7 @@ static const OptionInfoRec Chips655xxOptions[] = {
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_STN,		"STN",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_USE_MODELINE,	"UseModeline",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_LCD_STRETCH,	"NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_LCD_STRETCH,	"Stretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LCD_CENTER,	"LcdCenter",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SUSPEND_HACK,	"SuspendHack",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -623,7 +624,7 @@ static const OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_STN,		"STN",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_USE_MODELINE,	"UseModeline",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_LCD_STRETCH,	"NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_LCD_STRETCH,	"Stretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LCD_CENTER,	"LcdCenter",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FULL_MMIO,		"FullMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -675,7 +676,7 @@ static const char *vgahwSymbols[] = {
     "vgaHWSave",
     "vgaHWUnlock",
     "vgaHWVBlankKGA",
-    "vgaHWddc1SetSpeed",
+    "vgaHWddc1SetSpeedWeak",
     NULL
 };
 
@@ -748,7 +749,7 @@ static XF86ModuleVersionInfo chipsVersRec =
 	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
+	XORG_VERSION_CURRENT,
 	CHIPS_MAJOR_VERSION, CHIPS_MINOR_VERSION, CHIPS_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
@@ -1427,8 +1428,11 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     hwp = VGAHWPTR(pScrn);
     vgaHWGetIOBase(hwp);
+#if XF86_VERSION_CURRENT > XF86_VERSION_NUMERIC(4,1,0,0,0)
     cPtr->PIOBase = hwp->PIOOffset;
-
+#else
+     cPtr->PIOBase = 0 ; /* for old version the IO offset is global */
+#endif
     /*
      * Must allow ensure that storage for the 2nd set of vga registers is
      * allocated for dual channel cards
@@ -1528,10 +1532,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	if (cPtr->pEnt->location.type == BUS_PCI) {
 	    /* Tack on 0x800000 to access the big-endian aperture? */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    cPtr->FbAddress =  (cPtr->PciInfo->memBase[0] & 0xff800000) + 0x800000L;
-#else
-	    cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
+	    if (!BE_SWAP_APRETURE(pScrn,cPtr))
+		cPtr->FbAddress =  (cPtr->PciInfo->memBase[0] & 0xff800000) + 0x800000L;
+	    else
 #endif
+		cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
+
 	    from = X_PROBED;
 	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone))
 		cPtr->Flags &= ~ChipsLinearSupport;
@@ -1559,7 +1565,15 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		   "Enabling linear addressing\n");
 	xf86DrvMsg(pScrn->scrnIndex, from,
 		   "base address is set at 0x%lX.\n", cPtr->FbAddress);
-	cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	if (BE_SWAP_APRETURE(pScrn,cPtr))
+	    cPtr->IOAddress = cPtr->FbAddress - 0x400000L;
+	else
+#endif
+	    cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
+ 	xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT,
+ 		   "IOAddress is set at 0x%lX.\n",cPtr->IOAddress);
+	
     } else
 	xf86DrvMsg(pScrn->scrnIndex, from,
 		   "Disabling linear addressing\n");
@@ -1613,10 +1627,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 			   "PseudoColor overlay enabled.\n");
 		if (!xf86IsOptionSet(cPtr->Options, OPTION_LCD_STRETCH))
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                             - Forcing option \"NoStretch\".\n");
+			   "                             - Forcing option \"Stretch\" \"ON\".\n");
 		if (!xf86IsOptionSet(cPtr->Options, OPTION_LCD_CENTER))
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                             - Forcing option \"LcdCenter\".\n");
+			   "                             - Forcing option \"LcdCenter\" \"OFF\".\n");
 		if (cPtr->Flags & ChipsShadowFB) {
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		           "                             - Disabling \"Shadow Framebuffer\".\n");
@@ -1834,12 +1848,21 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    if (cPtr->pEnt->chipset == CHIPS_CT69030 && (cPtr->readXR(cPtr, 0x71) & 0x2))
+	cPtr->dualEndianAp = TRUE;
+    else
+	cPtr->dualEndianAp = FALSE;
+#endif
+
     if ((cPtr->Flags & ChipsDualChannelSupport) &&
 		(xf86IsEntityShared(pScrn->entityList[0]))) {
        /* 
 	* This takes gives either half or the amount of memory specified
         * with the Crt2Memory option 
         */
+	pScrn->memPhysBase = cPtr->FbAddress;
+
         if(cPtr->SecondCrtc == FALSE) {
 	    int crt2mem = -1, adjust;
 	  
@@ -1862,12 +1885,15 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    cPtr->FbMapSize = 
 	       cPtrEnt->masterFbMapSize = pScrn->videoRam * 1024;
 	    cPtrEnt->slaveFbMapSize = cPtrEnt->slavevideoRam * 1024;
+	    pScrn->fbOffset = 0;
 	} else {
 	    cPtrEnt->slaveFbAddress = cPtr->FbAddress + 
-				cPtrEnt->masterFbAddress;
+				cPtrEnt->masterFbMapSize;
 	    cPtr->FbMapSize = cPtrEnt->slaveFbMapSize;
 	    pScrn->videoRam = cPtrEnt->slavevideoRam;
+	    pScrn->fbOffset = cPtrEnt->masterFbMapSize;
 	}
+	
         cPtrEnt->refCount++;
     } else {
         /* Normal Handling of video ram etc */
@@ -2245,26 +2271,27 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     
     cPtr->ClockMulFactor = 1;
 
-    /* Set the min pixel clock */
-    cPtr->MinClock = 11000;	/* XXX Guess, need to check this */
-    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %7.3f MHz\n",
-	       (float)(cPtr->MinClock / 1000.));
-    /* Set the max pixel clock */
+    /* Set the min/max pixel clock */
     switch (cPtr->Chipset) {
     case CHIPS_CT69030:
+	cPtr->MinClock = 3000;
 	cPtr->MaxClock = 170000;
 	break;
     case CHIPS_CT69000:
+	cPtr->MinClock = 3000;
 	cPtr->MaxClock = 135000;
 	break;
     case CHIPS_CT68554:
     case CHIPS_CT65555:
+	cPtr->MinClock = 1000;
 	cPtr->MaxClock = 110000;
 	break;
     case CHIPS_CT65554:
+	cPtr->MinClock = 1000;
 	cPtr->MaxClock = 95000;
 	break;
     case CHIPS_CT65550:
+	cPtr->MinClock = 1000;
 	if (((cPtr->readXR(cPtr, 0x04)) & 0xF) < 6) {
    if ((cPtr->readFR(cPtr, 0x0A)) & 2) {
 		/*5V Vcc */
@@ -2277,6 +2304,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    cPtr->MaxClock = 95000; /* Revision B */
 	break;
     }
+    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %7.3f MHz\n",
+	       (float)(cPtr->MinClock / 1000.));
     
     /* Check if maxClock is limited by the MemClk. Only 70% to allow for */
     /* RAS/CAS. Extra byte per memory clock needed if framebuffer used   */
@@ -4014,6 +4043,21 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+ 	/* TODO : find a better way to do this */
+ 	if (pScrn->depth == 24) {
+ 		int dummy ;
+ 		  /* Fixup RGB ordering in 24 BPP */
+ 			dummy = pScrn->offset.red ;
+ 			pScrn->offset.red = pScrn->offset.blue;
+ 			pScrn->offset.blue = dummy ;
+ 
+ 			dummy = pScrn->mask.red ;
+ 			pScrn->mask.red = pScrn->mask.blue;
+ 			pScrn->mask.blue = dummy ;
+ 	}
+#endif
+
     if (pScrn->depth > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
@@ -4345,14 +4389,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (cPtr->Flags & ChipsDPMSSupport)
 	xf86DPMSInit(pScreen, (DPMSSetProcPtr)chipsDisplayPowerManagementSet,
 		     0);
-
-#if 0 /* #### Shouldn't be needed */
-    /* Dual head, needs to fix framebuffer memory address */
-    if ((cPtr->Flags & ChipsDualChannelSupport) &&
-        (cPtr->SecondCrtc == TRUE))
-	pScrn->memPhysBase = cPtr->FbAddress + cPtrEnt->masterFbMapSize;
-#endif
-
+    
     /* Wrap the current CloseScreen function */
     cPtr->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = CHIPSCloseScreen;
@@ -4700,7 +4737,7 @@ chipsClockSelect(ScrnInfoPtr pScrn, int no)
 	break;
 
     default:
-	if (!chipsClockFind(pScrn, no, &TmpClock))
+	if (!chipsClockFind(pScrn, NULL, no, &TmpClock))
 	    return (FALSE);
 	chipsClockLoad(pScrn, &TmpClock);
     }
@@ -4781,7 +4818,8 @@ chipsClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
 }
 
 static Bool
-chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
+chipsClockFind(ScrnInfoPtr pScrn, DisplayModePtr mode,
+	       int no, CHIPSClockPtr Clock )
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -4801,9 +4839,9 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
     case HiQV_STYLE:
 	Clock->msr = cPtr->CRTclkInx << 2;
 	Clock->fr03 = cPtr->FPclkInx << 2;
-	Clock->Clock = pScrn->currentMode->Clock;
+	Clock->Clock = mode ? mode->Clock : 0;
 	if (xf86ReturnOptValBool(cPtr->Options, OPTION_USE_MODELINE, FALSE)) {
-	    Clock->FPClock = pScrn->currentMode->Clock;
+	    Clock->FPClock = mode ? mode->Clock : 0;
 	} else
 	    Clock->FPClock = cPtr->FPclock;
 	break;
@@ -4842,7 +4880,7 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 	    if ((cPtr->PanelType & ChipsLCD) && cPtr->FPclock) 
 		Clock->Clock = cPtr->FPclock;
 	    else
-		Clock->Clock = pScrn->currentMode->SynthClock;
+		Clock->Clock = mode ? mode->SynthClock : 0;
 	}
 	break;
     case OLD_STYLE:
@@ -4867,7 +4905,7 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 	} else {
 	    Clock->msr = 3 << 2;
 	    Clock->xr33 = 0;
-	    Clock->Clock = pScrn->currentMode->SynthClock;
+	    Clock->Clock = mode ? mode->SynthClock : 0;
 	}
 	break;
     }
@@ -5384,7 +5422,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
 
     /* init clock */
-    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 2\n");
 	return (FALSE);
     }
@@ -5465,6 +5503,14 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (!(cPtr->Flags & ChipsLinearSupport) || (pScrn->bitsPerPixel < 8))
 	ChipsNew->XR[0x0A] |= 0x1;
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    ChipsNew->XR[0x0A] &= 0xCF;
+    if (pScrn->bitsPerPixel == 16) {
+	ChipsNew->XR[0x0A] &= 0xCF;
+	if  (cPtr->dualEndianAp)
+	    ChipsNew->XR[0x0A] |= 0x10;
+    }
+#endif
     ChipsNew->XR[0x09] |= 0x1;	       /* Enable extended CRT registers */
     ChipsNew->XR[0x0E] = 0;           /* Single map */
     ChipsNew->XR[0x40] |= 0x2;	       /* Don't wrap at 256kb */
@@ -5592,7 +5638,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* centering/stretching */
     if (!xf86ReturnOptValBool(cPtr->Options, OPTION_SUSPEND_HACK, FALSE)) {
-	if (xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE) ||
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE) ||
 	(cPtr->Flags & ChipsOverlay8plus16)) {
 	    ChipsNew->FR[0x40] &= 0xDF;    /* Disable Horizontal stretching */
 	    ChipsNew->FR[0x48] &= 0xFB;    /* Disable vertical stretching */
@@ -5613,7 +5659,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     }
 
-    if ((xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, FALSE))
+    if ((xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, TRUE))
 		|| (cPtr->Flags & ChipsOverlay8plus16)) {
 	ChipsNew->FR[0x40] |= 0x3;    /* Enable Horizontal centering */
 	ChipsNew->FR[0x48] |= 0x3;    /* Enable Vertical centering */
@@ -5768,12 +5814,16 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			    - (ChipsNew->FR[0x31] & 0xF0)
 			    - (ChipsNew->FR[0x32] & 0x0F)
 			    - ((ChipsNew->FR[0x35] & 0xF0) << 4));
-	if (cPtr->PanelSize.HDisplay > mode->CrtcHDisplay)
-	    cPtr->OverlaySkewX += (cPtr->PanelSize.HDisplay - 
-						mode->CrtcHDisplay) / 2;
-	if (cPtr->PanelSize.VDisplay > mode->CrtcVDisplay)
-	    cPtr->OverlaySkewY += (cPtr->PanelSize.VDisplay - 
-				   mode->CrtcVDisplay) / 2;
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE)
+	      && xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, TRUE))
+	{
+	    if (cPtr->PanelSize.HDisplay > mode->CrtcHDisplay) 
+		cPtr->OverlaySkewX += (cPtr->PanelSize.HDisplay - 
+				       mode->CrtcHDisplay) / 2;
+	    if (cPtr->PanelSize.VDisplay > mode->CrtcVDisplay)
+		cPtr->OverlaySkewY += (cPtr->PanelSize.VDisplay -
+				       mode->CrtcVDisplay) / 2;
+	}
     } else {
 	cPtr->OverlaySkewX = mode->CrtcHTotal - mode->CrtcHBlankStart - 9;
 	cPtr->OverlaySkewY = mode->CrtcVTotal - mode->CrtcVSyncEnd - 1;
@@ -5989,7 +6039,7 @@ chipsModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
     
     /* init clock */
-    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 4\n");
 	return (FALSE);
     }
@@ -6231,7 +6281,7 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
     
     /* init clock */
-    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 6\n");
 	return (FALSE);
     }
@@ -6441,12 +6491,15 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ChipsNew->XR[0x51] |= 0x40;   /* enable FP compensation          */
 	    ChipsNew->XR[0x55] |= 0x01;   /* enable horiz. compensation      */
 	    ChipsNew->XR[0x57] |= 0x01;   /* enable horiz. compensation      */
-	    if (xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH,
+	    if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH,
 				     FALSE)) {
 		if (mode->CrtcHDisplay < 1489)      /* HWBug                 */
-		    ChipsNew->XR[0x55] |= 0x02;	/* enable h-centering     */
-		else if (pScrn->bitsPerPixel == 24)
-		    ChipsNew->XR[0x56] = (lcdHDisplay - CrtcHDisplay) >> 1;
+		    ChipsNew->XR[0x55] |= 0x02;	/* enable auto h-centering   */
+		else {
+		    ChipsNew->XR[0x55] &= 0xFD;	/* disable auto h-centering  */
+		    if (pScrn->bitsPerPixel == 24) /* ? */
+			ChipsNew->XR[0x56] = (lcdHDisplay - CrtcHDisplay) >> 1;
+		}
 	    } else {
 	      ChipsNew->XR[0x55] &= 0xFD;	/* disable h-centering    */
 	      ChipsNew->XR[0x56] = 0;
@@ -6993,7 +7046,7 @@ chipsMapMem(ScrnInfoPtr pScrn)
     if (cPtr->Flags & ChipsLinearSupport) {
 	if (cPtr->UseMMIO) {
 	    if (IS_HiQV(cPtr)) {
-		if (cPtr->Bus == ChipsPCI)
+		if (cPtr->pEnt->location.type == BUS_PCI)
 		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
 			   VIDMEM_MMIO_32BIT,cPtr->PciTag, cPtr->IOAddress,
 			   0x20000L);
@@ -7001,7 +7054,7 @@ chipsMapMem(ScrnInfoPtr pScrn)
 		    cPtr->MMIOBase = xf86MapVidMem(pScrn->scrnIndex,
 			   VIDMEM_MMIO_32BIT, cPtr->IOAddress, 0x20000L);
 	    } else {
-		if (cPtr->Bus == ChipsPCI)
+		if (cPtr->pEnt->location.type == BUS_PCI)
 		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
 			  VIDMEM_MMIO_32BIT, cPtr->PciTag, cPtr->IOAddress,
 			  0x10000L);
@@ -7030,7 +7083,7 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	    }
 	  }
 
-	  if (cPtr->Bus == ChipsPCI)
+	  if (cPtr->pEnt->location.type == BUS_PCI)
 	      cPtr->FbBase = xf86MapPciMem(pScrn->scrnIndex,VIDMEM_FRAMEBUFFER,
  			          cPtr->PciTag, Addr, Map);
 
