@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_Blitter.h,v 1.4 2002/01/25 21:55:58 tsi Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* registers */
