@@ -155,11 +155,12 @@ static void  CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 #endif
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 # define BE_SWAP(pScrn,cPtr,x) \
-  if (BE_SWAP_APRETURE(pScrn,cPtr)) { \
+  if (!BE_SWAP_APRETURE(pScrn,cPtr)) { \
        CARD8 XR0A = cPtr->readXR(cPtr,0x0A); \
        cPtr->writeXR(cPtr, 0x0A, (XR0A & 0xcf) | x); \
   }
 
+/* 16 bit Byte Swap */
 # define BE_SWAPON(pScrn,cPtr) BE_SWAP(pScrn,cPtr,0x10)
 # define BE_SWAPOFF(pScrn,cPtr) BE_SWAP(pScrn,cPtr,0x0)
 #else
@@ -305,7 +306,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
 # endif
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	if (BE_SWAP_APRETURE(pScrn,cPtr))
+	if (!BE_SWAP_APRETURE(pScrn,cPtr))
 	    infoPtr->CPUToScreenColorExpandFillFlags |= SYNC_AFTER_COLOR_EXPAND;
 #endif
     }

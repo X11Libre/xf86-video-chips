@@ -1532,7 +1532,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	if (cPtr->pEnt->location.type == BUS_PCI) {
 	    /* Tack on 0x800000 to access the big-endian aperture? */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    if (!BE_SWAP_APRETURE(pScrn,cPtr))
+	    if (BE_SWAP_APRETURE(pScrn,cPtr))
 		cPtr->FbAddress =  (cPtr->PciInfo->memBase[0] & 0xff800000) + 0x800000L;
 	    else
 #endif
@@ -1849,9 +1849,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     }
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-    if (cPtr->pEnt->chipset == CHIPS_CT69030 && (cPtr->readXR(cPtr, 0x71) & 0x2))
+    if (cPtr->pEnt->chipset == CHIPS_CT69030 && ((cPtr->readXR(cPtr, 0x71) & 0x2)) == 0) /* CFG9: Pipeline variable ByteSwap mapping */
 	cPtr->dualEndianAp = TRUE;
-    else
+    else  /* CFG9: Pipeline A/B mapping */
 	cPtr->dualEndianAp = FALSE;
 #endif
 
@@ -5506,8 +5506,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     ChipsNew->XR[0x0A] &= 0xCF;
     if (pScrn->bitsPerPixel == 16) {
-	ChipsNew->XR[0x0A] &= 0xCF;
-	if  (cPtr->dualEndianAp)
+	if  (!cPtr->dualEndianAp)
 	    ChipsNew->XR[0x0A] |= 0x10;
     }
 #endif
