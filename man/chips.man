@@ -208,7 +208,7 @@ Default: off.
 .TP
 .BI "Option \*qFpMode\*q \*q" boolean \*q
 The driver probes the chip to find out if a flat panel (LCD) is connected
-and active. If this is true it limits the possibe screen size to the maximum
+and active. If this is true it limits the possible screen size to the maximum
 resolution of the panel. The chips is initialized by the BIOS which may
 set the chip to 'dual' mode even if no panel is connected. In this case
 the available resolution on the CRT is limited to the panel size
