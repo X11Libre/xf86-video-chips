@@ -1,4 +1,4 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN"[
+<!DOCTYPE linuxdoc PUBLIC "-//Xorg//DTD linuxdoc//EN"[
 <!ENTITY % defs SYSTEM "defs.ent"> %defs;
 ]>
  
@@ -7,11 +7,10 @@
 <!-- Title information -->
 <title> Information for Chips and Technologies Users
 <author> David Bateman (<email>dbateman@club-internet.fr</email>),
-         Egbert Eich (<email>eich@xfree86.org</email>)
+         Egbert Eich (<email>eich@freedesktop.org</email>)
 <date> 1st January 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.38 2001/10/01 13:44:02 eich Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -19,7 +18,12 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.38 2001/10/01 1
 
 <sect> Introduction <p>
 
-With the release of XFree86 version &relvers;, the Chips and Technologies
+The Chips and Technologies driver release in X11R&relvers; came from XFree86
+4.4 rc2; this document was originally included in that release and has been
+updated modestly to reflect differences between X11R&relvers; and XFree86
+4.4 rc2.
+
+With the release of XFree86 version 4.0, the Chips and Technologies
 driver has been extensively rewritten and contains many new features.
 This driver must be considered work in progress, and those users
 wanting stability are encouraged to use the older XFree86 3.3.x
@@ -149,7 +153,7 @@ HiQV architecture.
 </descrip>
 
 
-<sect> XF86Config Options <p>
+<sect> xorg.conf Options <p>
 
 The following options are of particular interest to the Chips and
 Technologies driver. It should be noted that the options are case
@@ -227,7 +231,7 @@ Option "STN"
 Option "UseModeline"
 </tag>
 	The flat panel timings are related to the panel size and not the
-	size of the mode specified in XF86Config. For this reason the
+	size of the mode specified in xorg.conf. For this reason the
 	default behaviour of the server is to use the panel timings already
 	installed in the chip. The user can force the panel timings to be
 	recalculated from the modeline with this option. However the panel
@@ -563,8 +567,7 @@ The driver is capable of driving both a CRT and a flat panel
 display. In fact the timing for the flat panel are dependent on the
 specification of the panel itself and are independent of the particular
 mode chosen. For this reason it is recommended to use one of the programs
-that automatically generate XF86Config files, such as "<tt>xf86config</tt>"
-or "<tt>XF86Setup</tt>".
+that automatically generate xorg.conf files, such as "<tt>xorgconfig</tt>".
 
 However there are many older machines, particularly those with 800x600
 screen or larger, that need to reprogram the panel timings. The reason
@@ -606,16 +609,17 @@ options.
 
 <sect> Dual Display Channel<p>
 
-XFree86 releases later than 4.1.0 support dual-channel display on the ct69030. 
-This support can be used to give a single display image on two screen with
-different refresh rates, or entirely different images on the two displays.
+XFree86 releases later than 4.1.0 and X.Org releases later than 6.7.0  support dual-channel
+display on the ct69030.  This support can be used to give a single
+display image on two screen with different refresh rates, or entirely
+different images on the two displays.
 
 Dual refresh rate display can be selected with the "<tt>DualRefresh</tt>"
 option described above. However to use the dual-head support is slightly
 more complex. Firstly, the ct69030 chipset must be installed on a PCI bus. This
 is a driver limitation that might be relaxed in the future. In addition the
-device, screen and layout sections of the "<tt>XF86Config</tt>" must be
-correctly configured. A sample of an incomplete "<tt>XF86Config</tt>" is
+device, screen and layout sections of the "<tt>xorg.conf</tt>" must be
+correctly configured. A sample of an incomplete "<tt>xorg.conf</tt>" is
 given below
 
 <quote><verb>
@@ -748,7 +752,7 @@ Hence you will see a line like
 
 in your startx log file. Note that many chips are capable of higher
 memory clocks than actually set by BIOS. You can use the "<tt>SetMClk</tt>"
-option in your XF86Config file to get a higher MClk. However some
+option in your xorg.conf file to get a higher MClk. However some
 video ram, particularly EDO, might not be fast enough to handle this,
 resulting in drawing errors on the screen. The formula to determine the
 maximum usable dotclock on the HiQV series of chips is
@@ -920,7 +924,7 @@ video processor beyond it capabilities won't cause damage.
 	chip. If the user has used the "<tt>UseModeline</tt>" or
 	"<tt>FixPanelSize</tt>" options the panel timings are derived
 	from the mode, which can be different than the panel size. Try
-	deleting theses options	from XF86Config or using an LCD/CRT switch.
+	deleting theses options	from xorg.conf or using an LCD/CRT switch.
 <tag> I can't get a 320x240 mode to occupy the whole 640x480 LCD</tag>
 	There is a bug in the 6554x's H/W cursor for modes that are
 	doubled vertically. The lower half of the screen is not accessible.
@@ -941,7 +945,7 @@ video processor beyond it capabilities won't cause damage.
 	the virtual console and back.
 <tag> The right hand edge of the mode isn't visible on the LCD</tag>
 	This is usually due to a problem with the "<tt>LcdCenter</tt>"
-	option. If this option is removed form XF86Config, then the problem
+	option. If this option is removed form xorg.conf, then the problem
 	might go away. Alternatively the manufacturer could have incorrectly
 	programmed the panel size in the EGA console mode. The
 	"<tt>FixPanelSize</tt>" can be used to force the modeline values into
@@ -980,11 +984,11 @@ video processor beyond it capabilities won't cause damage.
 	The XVideo extension has only recently been added to the chips driver.
 	Some YUV to RGB colour have been noted at 15 and 16 bit colour depths.
 	However, 8 and 24 bit colour depths seem to work fine.
-<tag> My ct69030 machine locks up when starting XFree86</tag>
+<tag> My ct69030 machine locks up when starting X</tag>
 	The ct69030 chipset introduced a new dual channel architecture. In its
-	current form, XFree86 can not take advantage of this second display
+	current form, X can not take advantage of this second display
 	channel. In fact if the video BIOS on the machine sets the ct69030
-	to a dual channel mode by default, XFree86 will lockup hard at this
+	to a dual channel mode by default, X will lockup hard at this
 	point. The solution is to use the BIOS setup to change to a single
 	display channel mode, ensuring that both the IOSS and MSS registers
 	are set to a single channel mode. Work is underway to fix this.
@@ -1005,7 +1009,7 @@ video processor beyond it capabilities won't cause damage.
 <verb>
 	  startx -- -depth 24 -fbbpp 32   8-8-8 RGB truecolor
 </verb>
-	however as XFree86 version &relvers; allows 32bpp pixmaps to be
+	however as X11R&relvers; allows 32bpp pixmaps to be
 	used with framebuffers operating in 24bpp, this mode of operating
 	will cost performance for no gain in functionality.
 
@@ -1037,17 +1041,16 @@ video processor beyond it capabilities won't cause damage.
 
   If you are having driver-related problems that are not addressed by this
   document, or if you have found bugs in accelerated functions, you can
-  try contacting the XFree86 team (the current driver maintainer can be
-  reached at <email>dbateman@club-internet.fr</email> or 
-  <email>eich@xfree86.org</email>),
-  or post in the Usenet newsgroup "<it>comp.windows.x.i386unix</it>".
+  try contacting the Xorg team (the current driver maintainer can be
+  reached at <email>eich@freedesktop.org</email>).
 
 <sect> Disclaimer <p>
 
-XFree86, allows the user to do damage to their hardware with software.
+The Xorg X server, allows the user to do damage to their hardware with 
+software with old monitors which may not tolerate bad display settings.
 Although the authors of this software have tried to prevent this, they
 disclaim all responsibility for any damage caused by the software. Use
-caution, if you think the Xserver is frying your screen, TURN THE COMPUTER
+caution, if you think the X server is frying your screen, TURN THE COMPUTER
 OFF!!
 
 <sect> Acknowledgement <p>

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.man,v 1.5 2002/01/04 21:22:27 tsi Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.man,v 1.4 2001/12/17 20:52:32 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH CHIPS __drivermansuffix__ __vendorversion__
@@ -14,7 +14,7 @@ chips \- Chips and Technologies video driver
 .fi
 .SH DESCRIPTION
 .B chips 
-is an XFree86 driver for Chips and Technologies video processors.  The majority
+is an __xservername__ driver for Chips and Technologies video processors.  The majority
 of the Chips and Technologies chipsets are supported by this driver. In general
 the limitation on the capabilities of this driver are determined by the 
 chipset on which it is run. Where possible, this driver provides full
@@ -77,7 +77,7 @@ Color depths 1, 4, 8, 15, 16, 24 and 8+16 are supported on all chipsets.
 The DirectColor visual is supported on all color depths except the 8+16
 overlay mode. Full acceleration is supplied for all chipsets.
 .SH CONFIGURATION DETAILS
-Please refer to XF86Config(__filemansuffix__) for general configuration
+Please refer to __xconfigfile__(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
 driver.
 .PP
@@ -206,10 +206,10 @@ off by default.  Using this option forces the use of an independent refresh
 rate on the two screens.
 Default: off.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
+__xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__)
 .PP
 You are also recommended to read the README.chips file that comes with all
-XFree86 distributions, which discusses the
+__xservername__ distributions, which discusses the
 .B chips
 driver in more detail.
 .SH AUTHORS
