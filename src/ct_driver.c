@@ -1841,6 +1841,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	* This takes gives either half or the amount of memory specified
         * with the Crt2Memory option 
         */
+	pScrn->memPhysBase = cPtr->FbAddress;
+
         if(cPtr->SecondCrtc == FALSE) {
 	    int crt2mem = -1, adjust;
 	  
@@ -1863,12 +1865,15 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    cPtr->FbMapSize = 
 	       cPtrEnt->masterFbMapSize = pScrn->videoRam * 1024;
 	    cPtrEnt->slaveFbMapSize = cPtrEnt->slavevideoRam * 1024;
+	    pScrn->fbOffset = 0;
 	} else {
 	    cPtrEnt->slaveFbAddress = cPtr->FbAddress + 
-				cPtrEnt->masterFbAddress;
+				cPtrEnt->masterFbMapSize;
 	    cPtr->FbMapSize = cPtrEnt->slaveFbMapSize;
 	    pScrn->videoRam = cPtrEnt->slavevideoRam;
+	    pScrn->fbOffset = cPtrEnt->masterFbMapSize;
 	}
+	
         cPtrEnt->refCount++;
     } else {
         /* Normal Handling of video ram etc */
@@ -2246,26 +2251,27 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     
     cPtr->ClockMulFactor = 1;
 
-    /* Set the min pixel clock */
-    cPtr->MinClock = 11000;	/* XXX Guess, need to check this */
-    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %7.3f MHz\n",
-	       (float)(cPtr->MinClock / 1000.));
-    /* Set the max pixel clock */
+    /* Set the min/max pixel clock */
     switch (cPtr->Chipset) {
     case CHIPS_CT69030:
+	cPtr->MinClock = 3000;
 	cPtr->MaxClock = 170000;
 	break;
     case CHIPS_CT69000:
+	cPtr->MinClock = 3000;
 	cPtr->MaxClock = 135000;
 	break;
     case CHIPS_CT68554:
     case CHIPS_CT65555:
+	cPtr->MinClock = 1000;
 	cPtr->MaxClock = 110000;
 	break;
     case CHIPS_CT65554:
+	cPtr->MinClock = 1000;
 	cPtr->MaxClock = 95000;
 	break;
     case CHIPS_CT65550:
+	cPtr->MinClock = 1000;
 	if (((cPtr->readXR(cPtr, 0x04)) & 0xF) < 6) {
    if ((cPtr->readFR(cPtr, 0x0A)) & 2) {
 		/*5V Vcc */
@@ -2278,6 +2284,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    cPtr->MaxClock = 95000; /* Revision B */
 	break;
     }
+    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %7.3f MHz\n",
+	       (float)(cPtr->MinClock / 1000.));
     
     /* Check if maxClock is limited by the MemClk. Only 70% to allow for */
     /* RAS/CAS. Extra byte per memory clock needed if framebuffer used   */
@@ -4346,14 +4354,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (cPtr->Flags & ChipsDPMSSupport)
 	xf86DPMSInit(pScreen, (DPMSSetProcPtr)chipsDisplayPowerManagementSet,
 		     0);
-
-#if 0 /* #### Shouldn't be needed */
-    /* Dual head, needs to fix framebuffer memory address */
-    if ((cPtr->Flags & ChipsDualChannelSupport) &&
-        (cPtr->SecondCrtc == TRUE))
-	pScrn->memPhysBase = cPtr->FbAddress + cPtrEnt->masterFbMapSize;
-#endif
-
+    
     /* Wrap the current CloseScreen function */
     cPtr->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = CHIPSCloseScreen;
