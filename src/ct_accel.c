@@ -1126,7 +1126,7 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
     unsigned char *data, *srcPtr, *dstPtr;
 
     if (!StippleTab)
-        StippleTab = LoaderSymbol("XAAStippleScanlineFuncMSBFirst");
+        StippleTab = XAAGetStippleScanlineFuncMSBFirst();
 
     DEBUG_P("CacheMonoStipple");
     if((h <= 128) && (w <= 128 * bpp / 8)) {
