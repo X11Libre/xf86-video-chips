@@ -39,7 +39,7 @@ chips_ddc1(ScrnInfoPtr pScrn)
 {
     unsigned char FR0B, FR0C, XR62;
     unsigned char mask_c = 0x00;
-    unsigned char val, tmp_val = 0;
+    unsigned char val, tmp_val;
     int i;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);    
 

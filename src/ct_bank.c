@@ -53,14 +53,11 @@
 /* Driver specific headers */
 #include "ct_driver.h"
 
-#if defined(__arm32__) && defined(__NetBSD__)
-#include <machine/sysarch.h>
+#ifdef	__arm32__
+/*#include <machine/sysarch.h>*/
 #define	arm32_drain_writebuf()	sysarch(1, 0)
-#elif defined(__arm32__)
-#define arm32_drain_writebuf()
-#endif
-
 #define ChipsBank(pScreen) CHIPSPTR(xf86Screens[pScreen->myNum])->Bank
+#endif
 
 #ifdef DIRECT_REGISTER_ACCESS
 int

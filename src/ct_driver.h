@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.33 2001/10/01 13:44:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.34 2002/01/25 21:56:00 tsi Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -108,7 +108,6 @@ typedef struct {
 #define ChipsVideoSupport	0x00000100
 #define ChipsDualChannelSupport	0x00000200
 #define ChipsDualRefresh	0x00000400
-#define Chips64BitMemory	0x00000800
 
 /* Options flags for the C&T chipsets */
 #define ChipsHWCursor		0x00001000
