@@ -158,7 +158,8 @@ static void     chipsLock(ScrnInfoPtr pScrn);
 static void     chipsUnlock(ScrnInfoPtr pScrn);
 static void     chipsClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock);
 static void     chipsClockLoad(ScrnInfoPtr pScrn, CHIPSClockPtr Clock);
-static Bool     chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock);
+static Bool     chipsClockFind(ScrnInfoPtr pScrn, DisplayModePtr mode,
+			       int no, CHIPSClockPtr Clock);
 static void     chipsCalcClock(ScrnInfoPtr pScrn, int Clock,
 				 unsigned char *vclk);
 static int      chipsGetHWClock(ScrnInfoPtr pScrn);
@@ -4700,7 +4701,7 @@ chipsClockSelect(ScrnInfoPtr pScrn, int no)
 	break;
 
     default:
-	if (!chipsClockFind(pScrn, no, &TmpClock))
+	if (!chipsClockFind(pScrn, NULL, no, &TmpClock))
 	    return (FALSE);
 	chipsClockLoad(pScrn, &TmpClock);
     }
@@ -4781,7 +4782,8 @@ chipsClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
 }
 
 static Bool
-chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
+chipsClockFind(ScrnInfoPtr pScrn, DisplayModePtr mode,
+	       int no, CHIPSClockPtr Clock )
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -4801,9 +4803,9 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
     case HiQV_STYLE:
 	Clock->msr = cPtr->CRTclkInx << 2;
 	Clock->fr03 = cPtr->FPclkInx << 2;
-	Clock->Clock = pScrn->currentMode->Clock;
+	Clock->Clock = mode ? mode->Clock : 0;
 	if (xf86ReturnOptValBool(cPtr->Options, OPTION_USE_MODELINE, FALSE)) {
-	    Clock->FPClock = pScrn->currentMode->Clock;
+	    Clock->FPClock = mode ? mode->Clock : 0;
 	} else
 	    Clock->FPClock = cPtr->FPclock;
 	break;
@@ -4842,7 +4844,7 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 	    if ((cPtr->PanelType & ChipsLCD) && cPtr->FPclock) 
 		Clock->Clock = cPtr->FPclock;
 	    else
-		Clock->Clock = pScrn->currentMode->SynthClock;
+		Clock->Clock = mode ? mode->SynthClock : 0;
 	}
 	break;
     case OLD_STYLE:
@@ -4867,7 +4869,7 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 	} else {
 	    Clock->msr = 3 << 2;
 	    Clock->xr33 = 0;
-	    Clock->Clock = pScrn->currentMode->SynthClock;
+	    Clock->Clock = mode ? mode->SynthClock : 0;
 	}
 	break;
     }
@@ -5384,7 +5386,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
 
     /* init clock */
-    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 2\n");
 	return (FALSE);
     }
@@ -5993,7 +5995,7 @@ chipsModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
     
     /* init clock */
-    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 4\n");
 	return (FALSE);
     }
@@ -6235,7 +6237,7 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE;
     
     /* init clock */
-    if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
+    if (!chipsClockFind(pScrn, mode, mode->ClockIndex, &ChipsNew->Clock)) {
 	ErrorF("bomb 6\n");
 	return (FALSE);
     }
