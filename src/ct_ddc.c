@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.9 2003/09/24 02:43:20 dawes Exp $ */
+/* $XFree86$ */
 
 /* All drivers should typically include these */
 #include "xf86.h"

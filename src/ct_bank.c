@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_bank.c,v 1.7 2003/12/31 06:14:36 dawes Exp $ */
+/* $XFree86$ */
 
 /*
  * Copyright 1997
