@@ -3,7 +3,7 @@
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
- * Modified 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
+ * Modified 1994 by RÃ©gis Cridlig <cridlig@dmi.ens.fr>
  *
  * Major Contributors to XFree86 3.2
  *   Modified 1995/6 by Nozomi Ytow
@@ -4528,7 +4528,7 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSEntPtr cPtrEnt;    
 
-    if(pScrn->vtSema){   /*§§§*/
+    if(pScrn->vtSema){   /*Â§Â§Â§*/
 	if (cPtr->Flags & ChipsDualChannelSupport) {
   	    cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
 					   CHIPSEntityIndex)->ptr;
@@ -4562,9 +4562,9 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if(cPtr->BlockHandler)
 	pScreen->BlockHandler = cPtr->BlockHandler;
 
-    pScreen->CloseScreen = cPtr->CloseScreen; /*§§§*/
+    pScreen->CloseScreen = cPtr->CloseScreen; /*Â§Â§Â§*/
     xf86ClearPrimInitDone(pScrn->entityList[0]);
-    return (*pScreen->CloseScreen)(scrnIndex, pScreen);/*§§§*/
+    return (*pScreen->CloseScreen)(scrnIndex, pScreen);/*Â§Â§Â§*/
 }
 
 /* Optional */
@@ -4704,7 +4704,7 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 static Bool
 CHIPSSaveScreen(ScreenPtr pScreen, int mode)
 {
-    ScrnInfoPtr pScrn = NULL;            /* §§§ */
+    ScrnInfoPtr pScrn = NULL;            /* Â§Â§Â§ */
     Bool unblank;
 
     unblank = xf86IsUnblank(mode);
@@ -4715,7 +4715,7 @@ CHIPSSaveScreen(ScreenPtr pScreen, int mode)
     if (unblank)
 	SetTimeSinceLastInputEvent();
 
-    if ((pScrn != NULL) && pScrn->vtSema) { /* §§§ */
+    if ((pScrn != NULL) && pScrn->vtSema) { /* Â§Â§Â§ */
 	chipsBlankScreen(pScrn, unblank);
     }
     return (TRUE);
