@@ -205,6 +205,17 @@ the maximum colour depth and refresh rate that can be achieved, and so is
 off by default.  Using this option forces the use of an independent refresh
 rate on the two screens.
 Default: off.
+.TP
+.BI "Option \*qFpMode\*q \*q" boolean \*q
+The driver probes the chip to find out if a flat panel (LCD) is connected
+and active. If this is true it limits the possible screen size to the maximum
+resolution of the panel. The chips is initialized by the BIOS which may
+set the chip to 'dual' mode even if no panel is connected. In this case
+the available resolution on the CRT is limited to the panel size
+the BIOS has set. To tell the driver that no panel is connected despite
+of what the BIOS is saying set this option to off. Don't set it to off
+if a panel is connected.
+Default: value probed by BIOS.
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__)
 .PP
