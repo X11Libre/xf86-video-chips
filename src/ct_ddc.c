@@ -39,7 +39,7 @@ chips_ddc1(ScrnInfoPtr pScrn)
 {
     unsigned char FR0B, FR0C, XR62;
     unsigned char mask_c = 0x00;
-    unsigned char val, tmp_val;
+    unsigned char val, tmp_val = 0;
     int i;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);    
 
@@ -94,7 +94,8 @@ chips_ddc1(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "DDC1 found\n");	
     else return;
 
-    xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,
+    xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,
+                                  LoaderSymbol("vgaHWddc1SetSpeed"),
 				  chips_ddc1Read));
 
     /* restore */

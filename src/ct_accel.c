@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.40 2002/11/25 14:04:58 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.40tsi Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -248,8 +248,11 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	 * then used by a CopyArea function with a complex ROP.
 	 */
 	infoPtr->SubsequentSolidFillRect = CTNAME(24SubsequentSolidFillRect);
+#if 0
+	/* How can an unsigned quantity be less than zero? */
         if (cAcl->ScratchAddress < 0)
 	    infoPtr->ScreenToScreenCopyFlags |= GXCOPY_ONLY;
+#endif
 #endif
         break;
 #ifdef CHIPS_HIQV
@@ -1096,7 +1099,11 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
     int i, j, max = 0, funcNo, pad, dwords, bpp = cAcl->BitsPerPixel;
     int *current;
     StippleScanlineProcPtr StippleFunc;
+    static StippleScanlineProcPtr *StippleTab = NULL;
     unsigned char *data, *srcPtr, *dstPtr;
+
+    if (!StippleTab)
+        StippleTab = LoaderSymbol("XAAStippleScanlineFuncMSBFirst");
 
     DEBUG_P("CacheMonoStipple");
     if((h <= 128) && (w <= 128 * bpp / 8)) {
@@ -1150,7 +1157,7 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
     pad = (((pCache->w * bpp) + 31) >> 5) << 2;
     dstPtr = data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
     srcPtr = (unsigned char*)pPix->devPrivate.ptr;
-    StippleFunc = XAAStippleScanlineFuncMSBFirst[funcNo];
+    StippleFunc = StippleTab[funcNo];
     
     dwords = ((pCache->w * bpp) >> 5) >> 3;
     cAcl->SlotWidth = dwords << 2;
