@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.12 2002/11/25 14:04:58 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.10 2000/12/06 15:35:12 eich Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -91,6 +91,13 @@
 		      } \
 		    }
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+# define TWEAK_24_BE(c) \
+    c = ((c & 0xFF0000) >> 16) | (c & 0xFF00) | (( c & 0xFF) << 16)
+#else
+# define TWEAK_24_BE(c)
+#endif
+
 #define ctSETROP(op) \
   MMIO_OUT32(cPtr->MMIOBase, BR(0x4), op)
 
@@ -129,6 +136,7 @@
 }
 
 #define ctSETBGCOLOR24(c) {\
+    TWEAK_24_BE(c); \
     if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
         MMIO_OUT32(cPtr->MMIOBase, BR(0x1), ((c)&0xFFFFFF)); \
@@ -150,6 +158,7 @@
 }
 
 #define ctSETFGCOLOR24(c) {\
+    TWEAK_24_BE(c); \
     if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
         MMIO_OUT32(cPtr->MMIOBase, BR(0x2), ((c)&0xFFFFFF)); \

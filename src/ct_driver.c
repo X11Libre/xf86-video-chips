@@ -1428,8 +1428,11 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     hwp = VGAHWPTR(pScrn);
     vgaHWGetIOBase(hwp);
+#if XF86_VERSION_CURRENT > XF86_VERSION_NUMERIC(4,1,0,0,0)
     cPtr->PIOBase = hwp->PIOOffset;
-
+#else
+     cPtr->PIOBase = 0 ; /* for old version the IO offset is global */
+#endif
     /*
      * Must allow ensure that storage for the 2nd set of vga registers is
      * allocated for dual channel cards
@@ -1529,10 +1532,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	if (cPtr->pEnt->location.type == BUS_PCI) {
 	    /* Tack on 0x800000 to access the big-endian aperture? */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    cPtr->FbAddress =  (cPtr->PciInfo->memBase[0] & 0xff800000) + 0x800000L;
-#else
-	    cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
+	    if (!BE_SWAP_APRETURE(pScrn,cPtr))
+		cPtr->FbAddress =  (cPtr->PciInfo->memBase[0] & 0xff800000) + 0x800000L;
+	    else
 #endif
+		cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
+
 	    from = X_PROBED;
 	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone))
 		cPtr->Flags &= ~ChipsLinearSupport;
@@ -1560,7 +1565,15 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		   "Enabling linear addressing\n");
 	xf86DrvMsg(pScrn->scrnIndex, from,
 		   "base address is set at 0x%lX.\n", cPtr->FbAddress);
-	cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	if (BE_SWAP_APRETURE(pScrn,cPtr))
+	    cPtr->IOAddress = cPtr->FbAddress - 0x400000L;
+	else
+#endif
+	    cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
+ 	xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT,
+ 		   "IOAddress is set at 0x%lX.\n",cPtr->IOAddress);
+	
     } else
 	xf86DrvMsg(pScrn->scrnIndex, from,
 		   "Disabling linear addressing\n");
@@ -1834,6 +1847,13 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    break;
 	}
     }
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    if (cPtr->pEnt->chipset == CHIPS_CT69030 && (cPtr->readXR(cPtr, 0x71) & 0x2))
+	cPtr->dualEndianAp = TRUE;
+    else
+	cPtr->dualEndianAp = FALSE;
+#endif
 
     if ((cPtr->Flags & ChipsDualChannelSupport) &&
 		(xf86IsEntityShared(pScrn->entityList[0]))) {
@@ -4023,6 +4043,21 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+ 	/* TODO : find a better way to do this */
+ 	if (pScrn->depth == 24) {
+ 		int dummy ;
+ 		  /* Fixup RGB ordering in 24 BPP */
+ 			dummy = pScrn->offset.red ;
+ 			pScrn->offset.red = pScrn->offset.blue;
+ 			pScrn->offset.blue = dummy ;
+ 
+ 			dummy = pScrn->mask.red ;
+ 			pScrn->mask.red = pScrn->mask.blue;
+ 			pScrn->mask.blue = dummy ;
+ 	}
+#endif
+
     if (pScrn->depth > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
@@ -5468,6 +5503,14 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (!(cPtr->Flags & ChipsLinearSupport) || (pScrn->bitsPerPixel < 8))
 	ChipsNew->XR[0x0A] |= 0x1;
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    ChipsNew->XR[0x0A] &= 0xCF;
+    if (pScrn->bitsPerPixel == 16) {
+	ChipsNew->XR[0x0A] &= 0xCF;
+	if  (cPtr->dualEndianAp)
+	    ChipsNew->XR[0x0A] |= 0x10;
+    }
+#endif
     ChipsNew->XR[0x09] |= 0x1;	       /* Enable extended CRT registers */
     ChipsNew->XR[0x0E] = 0;           /* Single map */
     ChipsNew->XR[0x40] |= 0x2;	       /* Don't wrap at 256kb */
@@ -7003,7 +7046,7 @@ chipsMapMem(ScrnInfoPtr pScrn)
     if (cPtr->Flags & ChipsLinearSupport) {
 	if (cPtr->UseMMIO) {
 	    if (IS_HiQV(cPtr)) {
-		if (cPtr->Bus == ChipsPCI)
+		if (cPtr->pEnt->location.type == BUS_PCI)
 		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
 			   VIDMEM_MMIO_32BIT,cPtr->PciTag, cPtr->IOAddress,
 			   0x20000L);
@@ -7011,7 +7054,7 @@ chipsMapMem(ScrnInfoPtr pScrn)
 		    cPtr->MMIOBase = xf86MapVidMem(pScrn->scrnIndex,
 			   VIDMEM_MMIO_32BIT, cPtr->IOAddress, 0x20000L);
 	    } else {
-		if (cPtr->Bus == ChipsPCI)
+		if (cPtr->pEnt->location.type == BUS_PCI)
 		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
 			  VIDMEM_MMIO_32BIT, cPtr->PciTag, cPtr->IOAddress,
 			  0x10000L);
@@ -7040,7 +7083,7 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	    }
 	  }
 
-	  if (cPtr->Bus == ChipsPCI)
+	  if (cPtr->pEnt->location.type == BUS_PCI)
 	      cPtr->FbBase = xf86MapPciMem(pScrn->scrnIndex,VIDMEM_FRAMEBUFFER,
  			          cPtr->PciTag, Addr, Map);
 

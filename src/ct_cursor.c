@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.28 2003/07/17 08:19:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.24 2001/10/01 13:44:03 eich Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -330,9 +330,14 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	if (cPtr->Flags & ChipsLinearSupport) {
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 	    /* On big endian machines we must flip our cursor image around. */
-    	    switch(cAcl->BytesPerPixel) {
+    	    switch(pScrn->bitsPerPixel >> 3) {
     	        case 4:
     	        case 3:
+#if 1
+		    memcpy((unsigned char *)cPtr->FbBase + cAcl->CursorAddress,
+			   src, cPtr->CursorInfoRec->MaxWidth * 
+			   cPtr->CursorInfoRec->MaxHeight / 4);
+#else
         	    for (y = 0; y < 64; y++) {
             	        P_SWAP32(d,s);
             	        d++; s++;
@@ -343,13 +348,12 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
             	        P_SWAP32(d,s);
             	        d++; s++;
         	    }
+#endif
         	    break;
     	        case 2:
            	    for (y = 0; y < 64; y++) {
             	        P_SWAP16(d,s);
             	        d++; s++;
-                        P_SWAP16(d,s);
-                        d++; s++;
                         P_SWAP16(d,s);
                         d++; s++;
                         P_SWAP16(d,s);
