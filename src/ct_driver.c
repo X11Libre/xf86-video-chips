@@ -5609,27 +5609,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if ((cPtr->Chipset == CHIPS_CT69000) || (cPtr->Chipset == CHIPS_CT69030)) {
 	/* The 690xx has overflow bits for the horizontal values as well */
 	ChipsNew->CR[0x38] = (((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8;
-#if 0
-	/* We need to redo the overscan voodoo from vgaHW.c */
-	ChipsStd->CRTC[3]  = (ChipsStd->CRTC[3] & ~0x1F) 
-	  | (((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F);
-	ChipsStd->CRTC[5]  = (ChipsStd->CRTC[5] & ~0x80) 
-	  | ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20) << 2);
-	ChipsNew->CR[0x3C] = ((mode->CrtcHBlankEnd >> 3) - 1) & 0xC0;
-	if ((mode->CrtcHBlankEnd >> 3) == (mode->CrtcHTotal >> 3)) {
-	    int i = (ChipsStd->CRTC[3] & 0x1F) 
-	             | ((ChipsStd->CRTC[5] & 0x80) >> 2) 
-	             | (ChipsNew->CR[0x3C] & 0xC0);
-	    if ((i-- > (ChipsStd->CRTC[2])) &&
-		(mode->CrtcHBlankEnd == mode->CrtcHTotal))
-	        i = 0;
-	    ChipsStd->CRTC[3] = (ChipsStd->CRTC[3] & ~0x1F) | (i & 0x1F);
-	    ChipsStd->CRTC[5] = (ChipsStd->CRTC[5] & ~0x80) | ((i << 2) &0x80);
-	    ChipsNew->CR[0x3C] = (i & 0xC0);
-	}
-#else
 	ChipsNew->CR[0x3C] = vgaHWHBlankKGA(mode, ChipsStd, 8, 0) << 6;
-#endif
     } else
       vgaHWHBlankKGA(mode, ChipsStd, 6, 0);
     vgaHWVBlankKGA(mode, ChipsStd, 8, 0);
