@@ -581,7 +581,7 @@ static const OptionInfoRec Chips655xxOptions[] = {
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_STN,		"STN",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_USE_MODELINE,	"UseModeline",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_LCD_STRETCH,	"NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_LCD_STRETCH,	"Stretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LCD_CENTER,	"LcdCenter",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SUSPEND_HACK,	"SuspendHack",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -623,7 +623,7 @@ static const OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_STN,		"STN",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_USE_MODELINE,	"UseModeline",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_LCD_STRETCH,	"NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_LCD_STRETCH,	"Stretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LCD_CENTER,	"LcdCenter",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FULL_MMIO,		"FullMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -5592,7 +5592,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* centering/stretching */
     if (!xf86ReturnOptValBool(cPtr->Options, OPTION_SUSPEND_HACK, FALSE)) {
-	if (xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE) ||
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE) ||
 	(cPtr->Flags & ChipsOverlay8plus16)) {
 	    ChipsNew->FR[0x40] &= 0xDF;    /* Disable Horizontal stretching */
 	    ChipsNew->FR[0x48] &= 0xFB;    /* Disable vertical stretching */
@@ -5613,7 +5613,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     }
 
-    if ((xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, FALSE))
+    if ((xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, TRUE))
 		|| (cPtr->Flags & ChipsOverlay8plus16)) {
 	ChipsNew->FR[0x40] |= 0x3;    /* Enable Horizontal centering */
 	ChipsNew->FR[0x48] |= 0x3;    /* Enable Vertical centering */
@@ -5768,12 +5768,16 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			    - (ChipsNew->FR[0x31] & 0xF0)
 			    - (ChipsNew->FR[0x32] & 0x0F)
 			    - ((ChipsNew->FR[0x35] & 0xF0) << 4));
-	if (cPtr->PanelSize.HDisplay > mode->CrtcHDisplay)
-	    cPtr->OverlaySkewX += (cPtr->PanelSize.HDisplay - 
-						mode->CrtcHDisplay) / 2;
-	if (cPtr->PanelSize.VDisplay > mode->CrtcVDisplay)
-	    cPtr->OverlaySkewY += (cPtr->PanelSize.VDisplay - 
-				   mode->CrtcVDisplay) / 2;
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE)
+	      && xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, TRUE))
+	{
+	    if (cPtr->PanelSize.HDisplay > mode->CrtcHDisplay) 
+		cPtr->OverlaySkewX += (cPtr->PanelSize.HDisplay - 
+				       mode->CrtcHDisplay) / 2;
+	    if (cPtr->PanelSize.VDisplay > mode->CrtcVDisplay)
+		cPtr->OverlaySkewY += (cPtr->PanelSize.VDisplay -
+				       mode->CrtcVDisplay) / 2;
+	}
     } else {
 	cPtr->OverlaySkewX = mode->CrtcHTotal - mode->CrtcHBlankStart - 9;
 	cPtr->OverlaySkewY = mode->CrtcVTotal - mode->CrtcVSyncEnd - 1;
@@ -6441,12 +6445,15 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ChipsNew->XR[0x51] |= 0x40;   /* enable FP compensation          */
 	    ChipsNew->XR[0x55] |= 0x01;   /* enable horiz. compensation      */
 	    ChipsNew->XR[0x57] |= 0x01;   /* enable horiz. compensation      */
-	    if (xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH,
+	    if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH,
 				     FALSE)) {
 		if (mode->CrtcHDisplay < 1489)      /* HWBug                 */
-		    ChipsNew->XR[0x55] |= 0x02;	/* enable h-centering     */
-		else if (pScrn->bitsPerPixel == 24)
-		    ChipsNew->XR[0x56] = (lcdHDisplay - CrtcHDisplay) >> 1;
+		    ChipsNew->XR[0x55] |= 0x02;	/* enable auto h-centering   */
+		else {
+		    ChipsNew->XR[0x55] &= 0xFD;	/* disable auto h-centering  */
+		    if (pScrn->bitsPerPixel == 24) /* ? */
+			ChipsNew->XR[0x56] = (lcdHDisplay - CrtcHDisplay) >> 1;
+		}
 	    } else {
 	      ChipsNew->XR[0x55] &= 0xFD;	/* disable h-centering    */
 	      ChipsNew->XR[0x56] = 0;
