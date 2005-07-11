@@ -22,6 +22,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 /*
  * When monochrome tiles/stipples are cached on the HiQV chipsets the
  * pitch of the monochrome data is the displayWidth. The HiQV manuals

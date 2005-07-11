@@ -28,6 +28,11 @@
  *    negligence, tort, under statute, in equity, at law or otherwise, even if
  *    advised of the possibility of such damage. 
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define PSZ 8
 
 /*
@@ -53,11 +58,14 @@
 /* Driver specific headers */
 #include "ct_driver.h"
 
-#ifdef	__arm32__
-/*#include <machine/sysarch.h>*/
+#if defined(__arm32__) && defined(__NetBSD__)
+#include <machine/sysarch.h>
 #define	arm32_drain_writebuf()	sysarch(1, 0)
-#define ChipsBank(pScreen) CHIPSPTR(xf86Screens[pScreen->myNum])->Bank
+#elif defined(__arm32__)
+#define arm32_drain_writebuf()
 #endif
+
+#define ChipsBank(pScreen) CHIPSPTR(xf86Screens[pScreen->myNum])->Bank
 
 #ifdef DIRECT_REGISTER_ACCESS
 int
