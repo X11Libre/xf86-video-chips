@@ -46,6 +46,7 @@ AC_ARG_WITH(module-dir, [  --with-xorg-module-dir=DIR ],
 AC_SUBST(moduledir)
 
 # Checks for pkg-config packages
+PKG_CHECK_MODULES(XORG, xorg-server xproto)
 sdkdir=$(pkg-config --variable=sdkdir xorg-server)
 
 CFLAGS="$XORG_CFLAGS "' -I$(top_srcdir)/src'
