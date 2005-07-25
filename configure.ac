@@ -40,24 +40,22 @@ AC_PROG_CC
 
 AH_TOP([#include "xorg-server.h"])
 
-AC_ARG_WITH(module-dir, [  --with-xorg-module-dir=DIR ],
-                        [ moduledir="$withval" ],
-                        [ moduledir="$libdir/xorg/modules" ])
-AC_SUBST(moduledir)
-
+AC_ARG_WITH(xorg-module-dir,
+            AC_HELP_STRING([--with-xorg-module-dir=DIR],
+                           [Default xorg module directory [[default=$libdir/xorg/modules]]]),
+            [moduledir="$withval"],
+            [moduledir="$libdir/xorg/modules"])
 # Checks for pkg-config packages
-PKG_CHECK_MODULES(XORG, xorg-server xproto)
+PKG_CHECK_MODULES(XORG, [xorg-server xproto])
 sdkdir=$(pkg-config --variable=sdkdir xorg-server)
-
-CFLAGS="$XORG_CFLAGS "' -I$(top_srcdir)/src'
-INCLUDES="$XORG_INCS -I${sdkdir} "'-I$(top_srcdir)/src -I$(prefix)/include'
-AC_SUBST([CFLAGS])
-AC_SUBST([INCLUDES])
 
 # Checks for libraries.
 
 # Checks for header files.
 AC_HEADER_STDC
+
+AC_SUBST([XORG_CFLAGS])
+AC_SUBST([moduledir])
 
 AC_OUTPUT([
 	Makefile
