@@ -18,6 +18,15 @@
 #  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+# sick hack borrowed from mga.  please, people, don't write code this ugly.
+noinst_LTLIBRARIES = libct_accelmm.la libct_accelhi.la
+
+libct_accelmm_la_SOURCES = ct_accel.c
+libct_accelmm_la_CFLAGS = @XORG_CFLAGS@ -DCHIPS_MMIO
+
+libct_accelhi_la_SOURCES = ct_accel.c
+libct_accelhi_la_CFLAGS = @XORG_CFLAGS@ -DCHIPS_MMIO -DCHIPS_HIQV
+
 # this is obnoxious:
 # -module lets us name the module exactly how we want
 # -avoid-version prevents gratuitous .0.0.0 version numbers on the end
@@ -27,6 +36,7 @@ AM_CFLAGS = @XORG_CFLAGS@
 chips_drv_la_LTLIBRARIES = chips_drv.la
 chips_drv_la_LDFLAGS = -module -avoid-version
 chips_drv_ladir = @moduledir@/drivers
+chips_drv_LIBADD = $(noinst_LTLIBRARIES)
 
 chips_drv_la_SOURCES = \
          ct_accel.c \

@@ -1,0 +1,4 @@
+2005-10-04  Adam Jackson  <ajax@freedesktop.org>
+
+	* src/Makefile.am:
+	Bug #4588: N-way build of ct_accel.c, as in monolith.
