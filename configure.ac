@@ -54,6 +54,19 @@ sdkdir=$(pkg-config --variable=sdkdir xorg-server)
 # Checks for header files.
 AC_HEADER_STDC
 
+# Checks for functions (often defined as inlines in compiler.h)
+AC_MSG_CHECKING([for inb])
+AC_LINK_IFELSE(AC_LANG_SOURCE([
+#include "util/AsmMacros.h"
+
+int main() {
+	int x = inb(0);
+	return x;
+}
+]), [HAVE_INB=yes], [HAVE_INB=no])
+AC_MSG_RESULT([$HAVE_INB])
+AM_CONDITIONAL(BUILD_UTILS, [test x$HAVE_INB = xyes])
+
 AC_SUBST([XORG_CFLAGS])
 AC_SUBST([moduledir])
 
