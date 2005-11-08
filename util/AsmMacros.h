@@ -57,7 +57,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/AsmMacros.h,v 1.1 2001/11/16 21:13:34 tsi Exp $ */
+/* $XFree86$ */
 
 #if defined(__GNUC__)
 #if defined(linux) && (defined(__alpha__) || defined(__ia64__))
@@ -438,13 +438,13 @@ void outl(U16_t, U32_t);
 #   define __USLC__
 #  endif
 # endif
-#ifndef SCO325
-# include <sys/inline.h>
-#else
-# include "../common/scoasm.h"
-#endif
-#define intr_disable() asm("cli")
-#define intr_enable()  asm("sti")
+# ifndef __SCO__
+#  include <sys/inline.h>
+# else
+#  include "../common/scoasm.h"
+# endif
+# define intr_disable() asm("cli")
+# define intr_enable()  asm("sti")
 
 #endif /* _MINIX and _ACK */
 #endif /* __GNUC__ */
