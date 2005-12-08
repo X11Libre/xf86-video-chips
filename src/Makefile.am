@@ -36,7 +36,7 @@ AM_CFLAGS = @XORG_CFLAGS@
 chips_drv_la_LTLIBRARIES = chips_drv.la
 chips_drv_la_LDFLAGS = -module -avoid-version
 chips_drv_ladir = @moduledir@/drivers
-chips_drv_LIBADD = $(noinst_LTLIBRARIES)
+chips_drv_la_LIBADD = $(noinst_LTLIBRARIES)
 
 chips_drv_la_SOURCES = \
          ct_accel.c \
