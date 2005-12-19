@@ -1,3 +1,8 @@
+2005-12-19  Alan Coopersmith  <alan.coopersmith@sun.com>
+
+	* README.sgml:
+	Fix typo.
+
 2005-12-14  Kevin E. Martin  <kem-at-freedesktop-dot-org>
 
 	* configure.ac:
