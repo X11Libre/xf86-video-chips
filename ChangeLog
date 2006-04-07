@@ -1,3 +1,9 @@
+2006-04-07  Aaron Plattner  <aplattner@nvidia.com>
+
+	* src/ct_video.c: (CHIPSPutImage):
+	Add a DrawablePtr argument to the XV functions to pave the way for
+	redirected video.
+
 2006-04-06  Adam Jackson  <ajax@freedesktop.org>
 
 	* configure.ac:
