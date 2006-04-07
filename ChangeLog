@@ -13,6 +13,9 @@
 	* src/ct_video.c:
 	Unlibcwrap.  Bump server version requirement.  Bump to 1.1.0.
 
+	* src/ct_driver.c:
+	VERSION -> CHIPS_VERSION
+
 2005-12-20  Kevin E. Martin  <kem-at-freedesktop-dot-org>
 
 	* configure.ac:

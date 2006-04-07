@@ -462,7 +462,7 @@ static DisplayModeRec ChipsNTSCMode = {
 };
 #endif
 
-#define VERSION 4000
+#define CHIPS_VERSION 4000
 #define CHIPS_NAME "CHIPS"
 #define CHIPS_DRIVER_NAME "chips"
 #define CHIPS_MAJOR_VERSION 1
@@ -478,7 +478,7 @@ static DisplayModeRec ChipsNTSCMode = {
  */
 
 _X_EXPORT DriverRec CHIPS = {
-	VERSION,
+	CHIPS_VERSION,
 	CHIPS_DRIVER_NAME,
 	CHIPSIdentify,
 	CHIPSProbe,
@@ -887,7 +887,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 		if ((pScrn = xf86ConfigPciEntity(pScrn,0,usedChips[i],
 						       CHIPSPCIchipsets,NULL,
 						       NULL,NULL,NULL,NULL))){
-		    pScrn->driverVersion = VERSION;
+		    pScrn->driverVersion = CHIPS_VERSION;
 		    pScrn->driverName    = CHIPS_DRIVER_NAME;
 		    pScrn->name          = CHIPS_NAME;
 		    pScrn->Probe         = CHIPSProbe;
