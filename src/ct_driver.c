@@ -77,7 +77,6 @@
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
-#include "xf86_ansic.h"
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -467,8 +466,8 @@ static DisplayModeRec ChipsNTSCMode = {
 #define CHIPS_NAME "CHIPS"
 #define CHIPS_DRIVER_NAME "chips"
 #define CHIPS_MAJOR_VERSION 1
-#define CHIPS_MINOR_VERSION 0
-#define CHIPS_PATCHLEVEL 1
+#define CHIPS_MINOR_VERSION 1
+#define CHIPS_PATCHLEVEL 0
 
 /*
  * This contains the functions needed by the server after loading the driver
