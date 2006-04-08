@@ -467,7 +467,7 @@ static DisplayModeRec ChipsNTSCMode = {
 #define CHIPS_DRIVER_NAME "chips"
 #define CHIPS_MAJOR_VERSION 1
 #define CHIPS_MINOR_VERSION 1
-#define CHIPS_PATCHLEVEL 0
+#define CHIPS_PATCHLEVEL 1
 
 /*
  * This contains the functions needed by the server after loading the driver
