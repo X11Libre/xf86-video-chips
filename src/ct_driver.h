@@ -28,6 +28,7 @@
 #ifndef _CT_DRIVER_H_
 #define _CT_DRIVER_H_
 
+#include "ct_pcirename.h"
 #include "xaa.h"
 #include "vbe.h"
 #include "xaalocal.h"		/* XAA internals as we replace some of XAA */
