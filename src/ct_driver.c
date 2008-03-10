@@ -113,8 +113,12 @@
 
 
 /* Needed for the 1 and 4 bpp framebuffers */
+#ifdef HAVE_XF1BPP
 #include "xf1bpp.h"
+#endif
+#ifdef HAVE_XF4BPP
 #include "xf4bpp.h"
+#endif
 
 /* Needed by Resources Access Control (RAC) */
 #include "xf86RAC.h"
@@ -720,8 +724,12 @@ static const char *vgahwSymbols[] = {
 
 #ifdef XFree86LOADER
 static const char *miscfbSymbols[] = {
+#ifdef HAVE_XF1BPP
     "xf1bppScreenInit",
+#endif
+#ifdef HAVE_XF4BPP
     "xf4bppScreenInit",
+#endif
     "cfb8_16ScreenInit",
     NULL
 };
@@ -1390,6 +1398,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
+#ifdef HAVE_XF1BPP
     case 1:
 	if (xf86LoadSubModule(pScrn, "xf1bpp") == NULL) {
 	    vbeFree(cPtr->pVbe);
@@ -1399,6 +1408,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	}	
 	xf86LoaderReqSymbols("xf1bppScreenInit", NULL);
 	break;
+#endif
+#ifdef HAVE_XF4BPP
     case 4:
 	if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
 	    vbeFree(cPtr->pVbe);
@@ -1408,6 +1419,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	}	
 	xf86LoaderReqSymbols("xf4bppScreenInit", NULL);
 	break;
+#endif
     case 16:
 	if (cPtr->Flags & ChipsOverlay8plus16) {
 	    if (xf86LoadSubModule(pScrn, "xf8_16bpp") == NULL) {
@@ -4114,18 +4126,22 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     switch (pScrn->bitsPerPixel) {
+#ifdef HAVE_XF1BPP
     case 1:
 	ret = xf1bppScreenInit(pScreen, FBStart,
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
 	break;
+#endif
+#ifdef HAVE_XF4BPP
     case 4:
 	ret = xf4bppScreenInit(pScreen, FBStart,
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
 	break;
+#endif
     case 16:
       if (cPtr->Flags & ChipsOverlay8plus16) {
 	  ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart + 
