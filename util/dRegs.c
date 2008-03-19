@@ -1,10 +1,8 @@
-/* $XConsortium: dRegs.c /main/2 1996/10/27 11:49:40 kaleb $ */
 
 
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.9 2001/11/16 21:13:34 tsi Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>

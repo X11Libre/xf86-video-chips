@@ -1,10 +1,8 @@
-/* $XConsortium: ct_BlitMM.h /main/2 1996/10/25 10:28:31 kaleb $ */
 
 
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BlitMM.h,v 1.5 2002/11/25 14:04:58 eich Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
