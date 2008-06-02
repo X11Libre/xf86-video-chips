@@ -1057,7 +1057,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 						   usedChips[i],
 						   CHIPSISAchipsets,NULL,
 						   NULL,NULL,NULL,NULL))) {
-		pScrn->driverVersion = VERSION;
+		pScrn->driverVersion = CHIPS_VERSION;
 		pScrn->driverName    = CHIPS_DRIVER_NAME;
 		pScrn->name          = CHIPS_NAME;
 		pScrn->Probe         = CHIPSProbe;
