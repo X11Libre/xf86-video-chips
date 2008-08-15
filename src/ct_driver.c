@@ -86,9 +86,6 @@
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
-/* This is used for module versioning */
-#include "xf86Version.h"
-
 /* Standard resources are defined here */
 #include "xf86Resources.h"
 
@@ -1542,11 +1539,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     hwp = VGAHWPTR(pScrn);
     vgaHWGetIOBase(hwp);
-#if XF86_VERSION_CURRENT > XF86_VERSION_NUMERIC(4,1,0,0,0)
     cPtr->PIOBase = hwp->PIOOffset;
-#else
-     cPtr->PIOBase = 0 ; /* for old version the IO offset is global */
-#endif
     /*
      * Must allow ensure that storage for the 2nd set of vga registers is
      * allocated for dual channel cards
