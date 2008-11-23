@@ -1,4 +1,3 @@
-
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -555,6 +554,7 @@ static PciChipsets CHIPSPCIchipsets[] = {
     { -1,	     -1,	     RES_UNDEFINED}
 };
 
+#ifdef HAVE_ISA
 static IsaChipsets CHIPSISAchipsets[] = {
     { CHIPS_CT65520,		RES_EXCLUSIVE_VGA },
     { CHIPS_CT65525,		RES_EXCLUSIVE_VGA },
@@ -574,6 +574,7 @@ static IsaChipsets CHIPSISAchipsets[] = {
     { CHIPS_CT64300,		RES_EXCLUSIVE_VGA },
     { -1,			RES_UNDEFINED }
 };
+#endif
 
 /* The options supported by the Chips and Technologies Driver */
 typedef enum {
@@ -1040,7 +1041,8 @@ CHIPSProbe(DriverPtr drv, int flags)
 	    xfree(usedChips);
 	}
     }
-    
+
+#ifdef HAVE_ISA 
     /* Isa Bus */
     numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
 				    drv,chipsFindIsaDevice,devSections,
@@ -1071,12 +1073,14 @@ CHIPSProbe(DriverPtr drv, int flags)
 	    xfree(usedChips);
 	}
     }
+#endif
     
     xfree(devSections);
     return foundScreen;
 }
 #endif
 
+#ifdef HAVE_ISA
 static int
 chipsFindIsaDevice(GDevPtr dev)
 {
@@ -1160,6 +1164,7 @@ chipsFindIsaDevice(GDevPtr dev)
     }
     return found;
 }
+#endif
 
 /* Mandatory */
 Bool

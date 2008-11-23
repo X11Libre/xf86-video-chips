@@ -73,6 +73,14 @@ if test "x$XSERVER_LIBPCIACCESS" = xyes; then
 fi
 AM_CONDITIONAL(XSERVER_LIBPCIACCESS, test "x$XSERVER_LIBPCIACCESS" = xyes)
 
+save_CFLAGS="$CFLAGS"
+CFLAGS="$XORG_CFLAGS"
+AC_CHECK_DECL(xf86ConfigIsaEntity,
+	      [AC_DEFINE(HAVE_ISA, 1, [Have ISA support])],
+	      [],
+	      [#include "xf86.h"])
+CFLAGS="$save_CFLAGS"
+
 # Checks for header files.
 AC_HEADER_STDC
 
