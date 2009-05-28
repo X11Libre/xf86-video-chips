@@ -691,97 +691,6 @@ static const OptionInfoRec ChipsHiQVOptions[] = {
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
-/*
- * List of symbols from other modules that this module references.  This
- * list is used to tell the loader that it is OK for symbols here to be
- * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to xf86LoaderReqSymbols() or
- * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
- * unresolved symbols that are not required.
- */
-
-static const char *vgahwSymbols[] = {
-    "vgaHWAllocDefaultRegs",
-    "vgaHWFreeHWRec",
-    "vgaHWGetHWRec",
-    "vgaHWGetIOBase",
-    "vgaHWGetIndex",
-    "vgaHWHBlankKGA",
-    "vgaHWInit",
-    "vgaHWLock",
-    "vgaHWMapMem",
-    "vgaHWProtect",
-    "vgaHWRestore",
-    "vgaHWSave",
-    "vgaHWUnlock",
-    "vgaHWVBlankKGA",
-    "vgaHWddc1SetSpeedWeak",
-    NULL
-};
-
-#ifdef XFree86LOADER
-static const char *miscfbSymbols[] = {
-#ifdef HAVE_XF1BPP
-    "xf1bppScreenInit",
-#endif
-#ifdef HAVE_XF4BPP
-    "xf4bppScreenInit",
-#endif
-    "cfb8_16ScreenInit",
-    NULL
-};
-#endif
-
-static const char *fbSymbols[] = {
-    "fbScreenInit",
-    "fbPictureInit",
-    NULL
-};
-
-static const char *xaaSymbols[] = {
-    "XAACreateInfoRec",
-    "XAADestroyInfoRec",
-    "XAAInit",
-    "XAAInitDualFramebufferOverlay",
-    "XAAStippleScanlineFuncMSBFirst",
-    NULL
-};
-
-static const char *ramdacSymbols[] = {
-    "xf86CreateCursorInfoRec",
-    "xf86DestroyCursorInfoRec",
-    "xf86InitCursor",
-    NULL
-};
-
-static const char *ddcSymbols[] = {
-    "xf86DoEDID_DDC1",
-    "xf86DoEDID_DDC2",
-    "xf86PrintEDID",
-    "xf86SetDDCproperties",
-    NULL
-};
-
-static const char *i2cSymbols[] = {
-    "xf86CreateI2CBusRec",
-    "xf86I2CBusInit",
-    "xf86I2CFindBus",
-    "xf86I2CProbeAddress",
-    NULL
-};
-
-static const char *shadowSymbols[] = {
-    "ShadowFBInit",
-    NULL
-};
-
-static const char *vbeSymbols[] = {
-    "VBEInit",
-    "vbeDoEDID",
-    "vbeFree",
-    NULL
-};
-
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(chipsSetup);
@@ -819,14 +728,6 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Modules that this driver always requires can be loaded here
 	 * by calling LoadSubModule().
 	 */
-
-	/*
-	 * Tell the loader about symbols from other modules that this module
-	 * might refer to.
-	 */
-	LoaderRefSymLists(vgahwSymbols, miscfbSymbols, fbSymbols, xaaSymbols,
-			  ramdacSymbols, ddcSymbols, i2cSymbols,
-			  shadowSymbols, vbeSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -1182,7 +1083,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /* Allocate the ChipsRec driverPrivate */
     if (!CHIPSGetRec(pScrn)) {
@@ -1225,7 +1125,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 #if 0
     if (xf86LoadSubModule(pScrn, "int10")) {
  	xf86Int10InfoPtr pInt;
-	xf86LoaderReqSymLists(int10Symbols, NULL);
 #if 1
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	pInt = xf86InitInt10(cPtr->pEnt->index);
@@ -1235,7 +1134,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
-	xf86LoaderReqSymLists(vbeSymbols, NULL);
 	cPtr->pVbe =  VBEInit(NULL,cPtr->pEnt->index);
     }
     
@@ -1407,7 +1305,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
-	xf86LoaderReqSymbols("xf1bppScreenInit", NULL);
 	break;
 #endif
 #ifdef HAVE_XF4BPP
@@ -1418,7 +1315,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
-	xf86LoaderReqSymbols("xf4bppScreenInit", NULL);
 	break;
 #endif
     case 16:
@@ -1429,7 +1325,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	        CHIPSFreeRec(pScrn);
 		return FALSE;
 	    }	
-	    xf86LoaderReqSymbols("cfb8_16bppScreenInit", NULL);
 	    break;
 	}
     default:
@@ -1439,7 +1334,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
-	xf86LoaderReqSymLists(fbSymbols, NULL);
 	break;
     }
     
@@ -1450,7 +1344,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
 
     if (cPtr->Flags & ChipsShadowFB) {
@@ -1460,7 +1353,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
     
     if (cPtr->Accel.UseHWCursor) {
@@ -1470,7 +1362,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
-	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
 
     if (cPtr->Flags & ChipsLinearSupport) 
@@ -2029,8 +1920,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	Bool ddc_done = FALSE;
 	xf86MonPtr pMon;
 	
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
-
 	if (cPtr->pVbe) {
 	    if ((pMon 
 		 = xf86PrintEDID(vbeDoEDID(cPtr->pVbe, pVbeModule))) != NULL) {
@@ -2041,8 +1930,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
 	if (!ddc_done)
 	    if (xf86LoadSubModule(pScrn, "i2c")) {
-		xf86LoaderReqSymLists(i2cSymbols,NULL);
-	    
 		if (chips_i2cInit(pScrn)) {
 		    if ((pMon = xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,
 						      cPtr->I2C))) != NULL)
@@ -3003,7 +2890,6 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     }
     
     if (xf86LoadSubModule(pScrn, "ddc")) {
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
 	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL)));
     }
@@ -3776,7 +3662,6 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 		       "Memory clock option not supported for this chipset\n");
     
     if (xf86LoadSubModule(pScrn, "ddc")) {
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
 	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL)));
     }
