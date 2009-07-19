@@ -480,14 +480,14 @@ static DisplayModeRec ChipsNTSCMode = {
   { PCI_VENDOR_CHIPSTECH, (d), PCI_MATCH_ANY, PCI_MATCH_ANY, 0, 0, (i) }
 
 static const struct pci_id_match chips_device_match[] = {
-  CHIPS_DEVICE_MATCH(PCI_CHIP_65545, 0),
-  CHIPS_DEVICE_MATCH(PCI_CHIP_65548, 0),
-  CHIPS_DEVICE_MATCH(PCI_CHIP_65550, 0),
-  CHIPS_DEVICE_MATCH(PCI_CHIP_65554, 0),
-  CHIPS_DEVICE_MATCH(PCI_CHIP_65555, 0),
-  CHIPS_DEVICE_MATCH(PCI_CHIP_68554, 0),
-  CHIPS_DEVICE_MATCH(PCI_CHIP_69000, 0),
-  CHIPS_DEVICE_MATCH(PCI_CHIP_69030, 0),
+  CHIPS_DEVICE_MATCH(PCI_CHIP_65545, CHIPS_CT65545),
+  CHIPS_DEVICE_MATCH(PCI_CHIP_65548, CHIPS_CT65548),
+  CHIPS_DEVICE_MATCH(PCI_CHIP_65550, CHIPS_CT65550),
+  CHIPS_DEVICE_MATCH(PCI_CHIP_65554, CHIPS_CT65554),
+  CHIPS_DEVICE_MATCH(PCI_CHIP_65555, CHIPS_CT65555),
+  CHIPS_DEVICE_MATCH(PCI_CHIP_68554, CHIPS_CT68554),
+  CHIPS_DEVICE_MATCH(PCI_CHIP_69000, CHIPS_CT69000),
+  CHIPS_DEVICE_MATCH(PCI_CHIP_69030, CHIPS_CT69030),
   { 0, 0, 0 },
 };
 #endif
@@ -722,7 +722,7 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
     if (!setupDone) {
 	setupDone = TRUE;
-        xf86AddDriver(&CHIPS, module, 0);
+        xf86AddDriver(&CHIPS, module, HaveDriverFuncs);
 
 	/*
 	 * Modules that this driver always requires can be loaded here
@@ -801,7 +801,6 @@ CHIPSPciProbe(DriverPtr drv, int entity_num, struct pci_device * dev,
 	    intptr_t match_data)
 {
     ScrnInfoPtr pScrn = NULL;
-    EntityInfoPtr pEnt;
     CHIPSPtr cPtr;
 
     /* Allocate a ScrnInfoRec and claim the slot */
@@ -822,12 +821,16 @@ CHIPSPciProbe(DriverPtr drv, int entity_num, struct pci_device * dev,
 	pScrn->FreeScreen	= CHIPSFreeScreen;
 	pScrn->ValidMode	= CHIPSValidMode;
 
+	if (!CHIPSGetRec(pScrn)) {
+		return FALSE;
+	}
+	cPtr = CHIPSPTR(pScrn);
+	cPtr->Chipset = match_data;
 	/*
 	 * For cards that can do dual head per entity, mark the entity
 	 * as sharable. 
 	 */
-	pEnt = xf86GetEntityInfo(entity_num);
-	if (pEnt->chipset == CHIPS_CT69030) {
+	if (match_data == CHIPS_CT69030) {
 	    CHIPSEntPtr cPtrEnt = NULL;
 	    DevUnion *pPriv;
 
@@ -1102,7 +1105,11 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     for (i = 0; i<pScrn->numEntities; i++) {
 	cPtr->pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
 	if (cPtr->pEnt->resources) return FALSE;
-	cPtr->Chipset = cPtr->pEnt->chipset;
+	/* If we are using libpciaccess this is already set in CHIPSPciProbe.
+	 * If we are using something else we need to set it here.
+	 */
+	if (!cPtr->Chipset)
+		cPtr->Chipset = cPtr->pEnt->chipset;
 	pScrn->chipset = (char *)xf86TokenToString(CHIPSChipsets,
 						   cPtr->pEnt->chipset);
 	if ((cPtr->Chipset == CHIPS_CT64200) ||
