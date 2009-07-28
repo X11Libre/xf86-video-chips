@@ -85,8 +85,13 @@
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
+#ifndef XSERVER_LIBPCIACCESS
 /* Standard resources are defined here */
 #include "xf86Resources.h"
+
+/* Needed by Resources Access Control (RAC) */
+#include "xf86RAC.h"
+#endif
 
 /* All drivers using the vgahw module need this */
 #include "vgaHW.h"
@@ -114,9 +119,6 @@
 #ifdef HAVE_XF4BPP
 #include "xf4bpp.h"
 #endif
-
-/* Needed by Resources Access Control (RAC) */
-#include "xf86RAC.h"
 
 /* int10 */
 #include "xf86int10.h"
@@ -1104,7 +1106,9 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     /* This is the general case */
     for (i = 0; i<pScrn->numEntities; i++) {
 	cPtr->pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
+#ifndef XSERVER_LIBPCIACCESS
 	if (cPtr->pEnt->resources) return FALSE;
+#endif
 	/* If we are using libpciaccess this is already set in CHIPSPciProbe.
 	 * If we are using something else we need to set it here.
 	 */
@@ -1371,11 +1375,14 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
+#ifndef XSERVER_LIBPCIACCESS
     if (cPtr->Flags & ChipsLinearSupport) 
  	xf86SetOperatingState(resVgaMem, cPtr->pEnt->index, ResDisableOpr);
 
     if (cPtr->MMIOBaseVGA)
  	xf86SetOperatingState(resVgaIo, cPtr->pEnt->index, ResDisableOpr);
+#endif
+
     vbeFree(cPtr->pVbe);
     cPtr->pVbe = NULL;
     return TRUE;
@@ -1400,7 +1407,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     CHIPSPanelSizePtr Size = &cPtr->PanelSize;
     CHIPSMemClockPtr MemClk = &cPtr->MemClock;
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
+#ifndef XSERVER_LIBPCIACCESS
     resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
+#endif
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -1549,8 +1558,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	        cPtr->FbAddress =  PCI_REGION_BASE(cPtr->PciInfo, 0, REGION_MEM) & 0xff800000;
 
 	    from = X_PROBED;
+#ifndef XSERVER_LIBPCIACCESS
 	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone))
 		cPtr->Flags &= ~ChipsLinearSupport;
+#endif
 	} else 	{
 	    if (cPtr->pEnt->device->MemBase) {
 		cPtr->FbAddress = cPtr->pEnt->device->MemBase;
@@ -1562,12 +1573,14 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 				    (0x80 & (cPtr->readXR(cPtr, 0x05)))) << 16;
 		from = X_PROBED;
 	    }
+#ifndef XSERVER_LIBPCIACCESS
 	    linearRes[0].rBegin = cPtr->FbAddress;
 	    linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
 	    if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 		cPtr->Flags &= ~ChipsLinearSupport;
 		from = X_PROBED;
 	    }
+#endif
 	}
     }
     if (cPtr->Flags & ChipsLinearSupport) {
@@ -2455,7 +2468,9 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     Bool useLinear = FALSE;
     char *s;
+#ifndef XSERVER_LIBPCIACCESS
     resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
+#endif
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -2651,12 +2666,14 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    cPtr->FbAddress |= ((mask  & (cPtr->readXR(cPtr, 0x08))) << 16);
 	    from = X_PROBED;
 	}
+#ifndef XSERVER_LIBPCIACCESS
 	linearRes[0].rBegin = cPtr->FbAddress;
 	linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 	    useLinear = FALSE;
 	    from = X_PROBED;
 	}
+#endif
     }
 
     if (useLinear) {
@@ -2767,6 +2784,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
 	}
+#ifndef XSERVER_LIBPCIACCESS
 	linearRes[0].type = ResExcIoSparse | ResBios | ResBus;
 	linearRes[0].rBase = cPtr->Regs32[0];
 	linearRes[0].rMask = 0x83FC;
@@ -2784,6 +2802,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 			   "Disabling HWCursor\n");
 	    }
 	}
+#endif
     }
 
     cPtr->ClockMulFactor = ((pScrn->bitsPerPixel >= 8) ? bytesPerPixel : 1);
@@ -2915,7 +2934,9 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     Bool useLinear = FALSE;
     char *s;
+#ifndef XSERVER_LIBPCIACCESS
     resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
+#endif
     
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -3111,9 +3132,12 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
 	if (cPtr->pEnt->location.type == BUS_PCI) {
 	    cPtr->FbAddress =  PCI_REGION_BASE(cPtr->PciInfo, 0, REGION_MEM) & 0xff800000;
-	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone))
-		useLinear = FALSE;
+#ifndef XSERVER_LIBPCIACCESS
+	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone)) {
+	        useLinear = FALSE;
 		from = X_PROBED;
+	    }
+#endif
 	} else {
 	    if (cPtr->pEnt->device->MemBase) {
 		cPtr->FbAddress = cPtr->pEnt->device->MemBase;
@@ -3137,12 +3161,14 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 		}
 		from = X_PROBED;
 	    }
+#ifndef XSERVER_LIBPCIACCESS
 	    linearRes[0].rBegin = cPtr->FbAddress;
 	    linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
 	    if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 		useLinear = FALSE;
 		from = X_PROBED;
 	    }
+#endif
 	}
     }
     
@@ -3442,6 +3468,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
 	}
+#ifndef XSERVER_LIBPCIACCESS
 	linearRes[0].type = ResExcIoSparse | ResBios | ResBus;
 	linearRes[0].rBase = cPtr->Regs32[0];
 	linearRes[0].rMask = 0x83FC;
@@ -3459,6 +3486,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 			   "Disabling HWCursor\n");
 	    }
 	}
+#endif
     }
 
     /* sync reset ignored on this chipset */
@@ -4375,12 +4403,14 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     }
     
+#ifndef XSERVER_LIBPCIACCESS
     racflag = RAC_COLORMAP;
     if (cAcl->UseHWCursor)
         racflag |= RAC_CURSOR;
     racflag |= (RAC_FB | RAC_VIEWPORT);
     /* XXX Check if I/O and Mem flags need to be the same. */
     pScrn->racIoFlags = pScrn->racMemFlags = racflag;
+#endif
 #ifdef ENABLE_SILKEN_MOUSE
 	xf86SetSilkenMouse(pScreen);
 #endif
