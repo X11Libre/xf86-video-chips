@@ -85,7 +85,7 @@
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
-#ifndef XSERVER_LIBPCIACCESS
+#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 6
 /* Standard resources are defined here */
 #include "xf86Resources.h"
 
