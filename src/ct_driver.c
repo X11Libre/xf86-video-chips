@@ -3725,12 +3725,12 @@ CHIPSEnterVT(int scrnIndex, int flags)
 	&& (cPtr->Flags & ChipsLinearSupport)) 
         CHIPSResetVideo(pScrn); 
 
-    /*xf86UDelay(50000);*/
+    /*usleep(50000);*/
     chipsHWCursorOn(cPtr, pScrn);
     /* cursor settle delay */
-    xf86UDelay(50000);
+    usleep(50000);
     CHIPSAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);    
-    xf86UDelay(50000);
+    usleep(50000);
     return TRUE;
 }
 
