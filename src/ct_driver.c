@@ -103,7 +103,9 @@
 #include "mibstore.h"
 
 /* All drivers using the mi banking wrapper need this */
+#ifdef HAVE_ISA
 #include "mibank.h"
+#endif
 
 /* All drivers using the mi colormap manipulation need this */
 #include "micmap.h"
@@ -1546,6 +1548,13 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
 
+#ifndef HAVE_ISA
+    if (!(cPtr->Flags & ChipsLinearSupport)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Linear framebuffer required\n");
+	return FALSE;
+    }
+#endif
+
     /* linear base */
     if (cPtr->Flags & ChipsLinearSupport) {
 	if (cPtr->pEnt->location.type == BUS_PCI) {
@@ -2650,6 +2659,13 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
 
+#ifndef HAVE_ISA
+    if (!(cPtr->Flags & ChipsLinearSupport)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Linear framebuffer required\n");
+	return FALSE;
+    }
+#endif
+
     /* linear base */
     if (useLinear) {
 	unsigned char mask = 0xF8;
@@ -3113,6 +3129,13 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
     
+#ifndef HAVE_ISA
+    if (!(cPtr->Flags & ChipsLinearSupport)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Linear framebuffer required\n");
+	return FALSE;
+    }
+#endif
+
     /* linear base */
     if (useLinear) {
 	unsigned char mask;
@@ -4123,6 +4146,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     cPtr->HWCursorShown = FALSE;
 
+#ifdef HAVE_ISA
     if (!(cPtr->Flags & ChipsLinearSupport)) {
 	miBankInfoPtr pBankInfo;
 
@@ -4202,7 +4226,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Initialise cursor functions */
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
-    } else {
+    } else
+#endif /* HAVE_ISA */
+    {
     /* !!! Only support linear addressing for now. This might change */
 	/* Setup pointers to free space in video ram */
 #define CHIPSALIGN(size, align) (currentaddr - ((currentaddr - size) & ~align))
