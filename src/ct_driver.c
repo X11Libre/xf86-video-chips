@@ -4690,7 +4690,9 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     if (!pScrn->vtSema)
 	return;
 
+#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 8
     xf86EnableAccess(pScrn);
+#endif
     switch (PowerManagementMode) {
     case DPMSModeOn:
 	/* Screen: On; HSync: On, VSync: On */
