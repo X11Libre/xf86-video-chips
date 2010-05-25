@@ -787,10 +787,12 @@ CHIPSAvailableOptions(int chipid, int busid)
 {
     int chip = chipid & 0x0000ffff;
 
+#ifdef HAVE_ISA
     if (busid == BUS_ISA) {
     	if ((chip == CHIPS_CT64200) || (chip == CHIPS_CT64300)) 
 	    return ChipsWingineOptions;
     }
+#endif
     if (busid == BUS_PCI) {
     	if ((chip >= CHIPS_CT65550) && (chip <= CHIPS_CT69030))
 	    return ChipsHiQVOptions;
