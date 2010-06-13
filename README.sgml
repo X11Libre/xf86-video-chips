@@ -1,17 +1,14 @@
 <!DOCTYPE linuxdoc PUBLIC "-//Xorg//DTD linuxdoc//EN"[
-<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+<!ENTITY % defs SYSTEM "X11/defs.ent"> %defs;
 ]>
  
 <article>
 
 <!-- Title information -->
 <title> Information for Chips and Technologies Users
-<author> David Bateman (<email>dbateman@club-internet.fr</email>),
-         Egbert Eich (<email>eich@freedesktop.org</email>)
+<author> David Bateman (<url url="mailto:dbateman@club-internet.fr">),
+         Egbert Eich (<url url="mailto:eich@freedesktop.org">)
 <date> 1st January 2001
-
-<ident>
-</ident>
 
 <!-- Table of contents -->
 <toc>
@@ -1042,7 +1039,7 @@ video processor beyond it capabilities won't cause damage.
   If you are having driver-related problems that are not addressed by this
   document, or if you have found bugs in accelerated functions, you can
   try contacting the Xorg team (the current driver maintainer can be
-  reached at <email>eich@freedesktop.org</email>).
+  reached at <url url="mailto:eich@freedesktop.org">).
 
 <sect> Disclaimer <p>
 
