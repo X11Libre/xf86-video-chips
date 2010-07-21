@@ -99,7 +99,6 @@ int main() {
 AC_MSG_RESULT([$HAVE_INB])
 AM_CONDITIONAL(BUILD_UTILS, [test x$HAVE_INB = xyes])
 
-AC_SUBST([XORG_CFLAGS])
 AC_SUBST([moduledir])
 
 DRIVER_NAME=chips
