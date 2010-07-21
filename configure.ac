@@ -85,8 +85,6 @@ AC_CHECK_DECL(xf86ConfigIsaEntity,
 	      [#include "xf86.h"])
 CFLAGS="$save_CFLAGS"
 
-# Checks for header files.
-AC_HEADER_STDC
 
 # Checks for functions (often defined as inlines in compiler.h)
 AC_MSG_CHECKING([for inb])
