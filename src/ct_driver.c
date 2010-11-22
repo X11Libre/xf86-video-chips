@@ -111,8 +111,7 @@
 #include "micmap.h"
 
 #include "fb.h"
-#include "cfb8_16.h"
-
+#include "fboverlay.h"
 
 /* Needed for the 1 and 4 bpp framebuffers */
 #ifdef HAVE_XF1BPP
@@ -1332,16 +1331,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	}	
 	break;
 #endif
-    case 16:
-	if (cPtr->Flags & ChipsOverlay8plus16) {
-	    if (xf86LoadSubModule(pScrn, "xf8_16bpp") == NULL) {
-		vbeFree(cPtr->pVbe);
-		cPtr->pVbe = NULL;
-	        CHIPSFreeRec(pScrn);
-		return FALSE;
-	    }	
-	    break;
-	}
     default:
 	if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	    vbeFree(cPtr->pVbe);
@@ -3902,6 +3891,18 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 
     /* This shouldn't be necessary, but we'll play safe. */
     hwp->disablePalette(hwp);
+}
+
+static Bool
+cfb8_16ScreenInit(ScreenPtr pScreen, pointer pbits16, pointer pbits8,
+                  int xsize, int ysize, int dpix, int dpiy,
+                  int width16, int width8)
+{
+    return
+        (fbOverlaySetupScreen(pScreen, pbits16, pbits8, xsize, ysize,
+                              dpix, dpiy, width16, width8, 16, 8) &&
+         fbOverlayFinishScreenInit(pScreen, pbits16, pbits8, xsize, ysize,
+                                   dpix, dpiy, width16, width8, 16, 8, 16, 8));
 }
 
 /* Mandatory */
