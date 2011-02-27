@@ -771,7 +771,7 @@ CHIPSFreeRec(ScrnInfoPtr pScrn)
 {
     if (pScrn->driverPrivate == NULL)
 	return;
-    xfree(pScrn->driverPrivate);
+    free(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
 }
 
@@ -1487,7 +1487,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
-    if (!(cPtr->Options = xalloc(sizeof(ChipsHiQVOptions))))
+    if (!(cPtr->Options = malloc(sizeof(ChipsHiQVOptions))))
 	return FALSE;
     memcpy(cPtr->Options, ChipsHiQVOptions, sizeof(ChipsHiQVOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, cPtr->Options);
@@ -2566,7 +2566,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    if (!(cPtr->Options = xalloc(sizeof(ChipsWingineOptions))))
+    if (!(cPtr->Options = malloc(sizeof(ChipsWingineOptions))))
 	return FALSE;
     memcpy(cPtr->Options, ChipsWingineOptions, sizeof(ChipsWingineOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, cPtr->Options);
@@ -3037,7 +3037,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    if (!(cPtr->Options = xalloc(sizeof(Chips655xxOptions))))
+    if (!(cPtr->Options = malloc(sizeof(Chips655xxOptions))))
 	return FALSE;
     memcpy(cPtr->Options, Chips655xxOptions, sizeof(Chips655xxOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, cPtr->Options);
@@ -4063,7 +4063,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if(cPtr->Flags & ChipsShadowFB) {
 	cPtr->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
-	cPtr->ShadowPtr = xalloc(cPtr->ShadowPitch * height);
+	cPtr->ShadowPtr = malloc(cPtr->ShadowPitch * height);
 	displayWidth = cPtr->ShadowPitch / (pScrn->bitsPerPixel >> 3);
 	FBStart = cPtr->ShadowPtr;
     } else {
@@ -4625,10 +4625,8 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	XAADestroyInfoRec(cPtr->AccelInfoRec);
     if (cPtr->CursorInfoRec)
 	xf86DestroyCursorInfoRec(cPtr->CursorInfoRec);
-    if (cPtr->ShadowPtr)
-	xfree(cPtr->ShadowPtr);
-    if (cPtr->DGAModes)
-	xfree(cPtr->DGAModes);
+    free(cPtr->ShadowPtr);
+    free(cPtr->DGAModes);
     pScrn->vtSema = FALSE;
     if(cPtr->BlockHandler)
 	pScreen->BlockHandler = cPtr->BlockHandler;
