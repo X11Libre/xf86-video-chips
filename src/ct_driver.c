@@ -3917,7 +3917,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int init_picture = 0;
     VisualPtr visual;
     int allocatebase, freespace, currentaddr;
+#ifndef XSERVER_LIBPCIACCESS
     unsigned int racflag = 0;
+#endif
     unsigned char *FBStart;
     int height, width, displayWidth;
     CHIPSEntPtr cPtrEnt = NULL;
