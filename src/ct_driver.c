@@ -1595,7 +1595,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 #endif
 	    cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
  	xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT,
- 		   "IOAddress is set at 0x%lX.\n",cPtr->IOAddress);
+		   "IOAddress is set at 0x%lX.\n",(unsigned long)cPtr->IOAddress);
 	
     } else
 	xf86DrvMsg(pScrn->scrnIndex, from,
