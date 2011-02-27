@@ -157,7 +157,9 @@ static ModeStatus CHIPSValidMode(int scrnIndex, DisplayModePtr mode,
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Internally used functions */
+#ifdef HAVE_ISA
 static int      chipsFindIsaDevice(GDevPtr dev);
+#endif
 static Bool     chipsClockSelect(ScrnInfoPtr pScrn, int no);
 Bool     chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void     chipsSave(ScrnInfoPtr pScrn, vgaRegPtr VgaSave,
