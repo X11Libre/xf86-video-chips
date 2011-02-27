@@ -31,7 +31,7 @@ chips_ddc1Read(ScrnInfoPtr pScrn)
     register unsigned int tmp;
 
     while ((hwp->readST01(hwp)) & 0x08){};
-    while (!(hwp->readST01(hwp)) & 0x08){};
+    while (!((hwp->readST01(hwp)) & 0x08)){};
     tmp = cPtr->readXR(cPtr, 0x63);
     return (tmp & ddc_mask);
 }

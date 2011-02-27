@@ -7487,7 +7487,7 @@ chipsTestDACComp(ScrnInfoPtr pScrn, unsigned char a, unsigned char b,
 
     hwp->writeDacWriteAddr(hwp, 0x00);
     while ((hwp->readST01(hwp)) & 0x08){};    /* wait for vsync to end */
-    while (!(hwp->readST01(hwp)) & 0x08){};   /* wait for new vsync  */
+    while (!((hwp->readST01(hwp)) & 0x08)){}; /* wait for new vsync  */
     hwp->writeDacData(hwp, a);                /* set pattern */
     hwp->writeDacData(hwp, b);
     hwp->writeDacData(hwp, c);

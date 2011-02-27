@@ -239,8 +239,8 @@ CHIPS_SetViewport(
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
   
     if (flags & DGA_FLIP_RETRACE) {
- 	while ((hwp->readST01(hwp)) & 0x08){};
- 	while (!(hwp->readST01(hwp)) & 0x08){};
+	while ((hwp->readST01(hwp)) & 0x08){};
+	while (!((hwp->readST01(hwp)) & 0x08)){};
     }
 
     CHIPSAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
