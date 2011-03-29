@@ -1639,55 +1639,15 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
     }
     
-    if ((s = xf86GetOptValString(cPtr->Options, OPTION_OVERLAY))) {
-	if (!*s || !xf86NameCmp(s, "8,16") || !xf86NameCmp(s, "16,8")) {
-	  if (pScrn->bitsPerPixel == 16) {
-	    if (cPtr->Flags & ChipsLinearSupport) {
-		cPtr->Flags |= ChipsOverlay8plus16;
-		if(!xf86GetOptValInteger(
-			cPtr->Options, OPTION_COLOR_KEY, &(pScrn->colorKey)))
-		    pScrn->colorKey = TRANSPARENCY_KEY;
-		pScrn->overlayFlags = OVERLAY_8_16_DUALFB;
-		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-			   "PseudoColor overlay enabled.\n");
-		if (!xf86IsOptionSet(cPtr->Options, OPTION_LCD_STRETCH))
-		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                             - Forcing option \"Stretch\" \"ON\".\n");
-		if (!xf86IsOptionSet(cPtr->Options, OPTION_LCD_CENTER))
-		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                             - Forcing option \"LcdCenter\" \"OFF\".\n");
-		if (cPtr->Flags & ChipsShadowFB) {
-		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		           "                             - Disabling \"Shadow Framebuffer\".\n");
-		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                               Not support with option \"8Plus16\".\n");
-		    cPtr->Flags &= ~ChipsShadowFB;
-		    cPtr->Rotate = 0;
-		}
-	    } else {
-		xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Option \"Overlay\" ignored. Not supported without linear addressing\n");
-	    }
-	  } else {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-		"Option \"Overlay\" is not supported in this configuration\n");
-	  }
-	} else {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-		"\"%s\" is not a valid value for Option \"Overlay\"\n", s); 
-	}
-    }
-
-    if (!(cPtr->Flags & ChipsOverlay8plus16)) {
-	if(xf86GetOptValInteger(cPtr->Options, OPTION_VIDEO_KEY,
-		&(cPtr->videoKey))) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
+    if(xf86GetOptValInteger(cPtr->Options, OPTION_VIDEO_KEY,
+	&(cPtr->videoKey))) {
+         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
 		cPtr->videoKey);
-	} else {
-	    cPtr->videoKey =  (1 << pScrn->offset.red) | 
+    } else {
+       cPtr->videoKey =  (1 << pScrn->offset.red) | 
 			(1 << pScrn->offset.green) |
 			(((pScrn->mask.blue >> pScrn->offset.blue) - 1)
 			<< pScrn->offset.blue); 
-	}
     }
 
     if (cPtr->Flags & ChipsShadowFB) {
@@ -2335,28 +2295,16 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* and 32bits on the others. Thus multiply by a suitable factor      */  
     if (cPtr->Flags & Chips64BitMemory) {
 	if (cPtr->FrameBufferSize && (cPtr->PanelType & ChipsLCD))
-	    if (cPtr->Flags & ChipsOverlay8plus16 )
-		cPtr->MaxClock = min(cPtr->MaxClock, MemClk->Clk * 8 * 0.7 / 4);
-	    else
 		cPtr->MaxClock = min(cPtr->MaxClock,
 			     MemClk->Clk * 8 * 0.7 / (bytesPerPixel + 1));
 	else
-	    if (cPtr->Flags & ChipsOverlay8plus16)
-		cPtr->MaxClock = min(cPtr->MaxClock, MemClk->Clk * 8 * 0.7 / 3);
-	    else
 		cPtr->MaxClock = min(cPtr->MaxClock, 
 			     MemClk->Clk * 8 * 0.7 / bytesPerPixel);
     } else {
 	if (cPtr->FrameBufferSize && (cPtr->PanelType & ChipsLCD))
-	    if (cPtr->Flags & ChipsOverlay8plus16 )
-		cPtr->MaxClock = min(cPtr->MaxClock, MemClk->Clk * 4 * 0.7 / 4);
-	    else
 		cPtr->MaxClock = min(cPtr->MaxClock,
 			     MemClk->Clk * 4 * 0.7 / (bytesPerPixel + 1));
 	else
-	    if (cPtr->Flags & ChipsOverlay8plus16)
-		cPtr->MaxClock = min(cPtr->MaxClock, MemClk->Clk * 4 * 0.7 / 3);
-	    else
 		cPtr->MaxClock = min(cPtr->MaxClock, 
 			     MemClk->Clk * 4 * 0.7 / bytesPerPixel);
     }
@@ -3736,8 +3684,7 @@ CHIPSEnterVT(int scrnIndex, int flags)
     /* Should we re-save the text mode on each VT enter? */
     if(!chipsModeInit(pScrn, pScrn->currentMode))
       return FALSE;
-    if ((!(cPtr->Flags & ChipsOverlay8plus16)) 
-	&& (cPtr->Flags & ChipsVideoSupport)
+    if ((cPtr->Flags & ChipsVideoSupport)
 	&& (cPtr->Flags & ChipsLinearSupport)) 
         CHIPSResetVideo(pScrn); 
 
@@ -3788,8 +3735,7 @@ chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
     int i, index, shift ;
     CHIPSEntPtr cPtrEnt;    
 
-    shift = ((pScrn->depth == 15) && 
-	     (!(cPtr->Flags & ChipsOverlay8plus16))) ? 3 : 0;
+    shift = (pScrn->depth == 15) ? 3 : 0;
 
     if (cPtr->UseDualChannel) {
         cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
@@ -3895,18 +3841,6 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
     hwp->disablePalette(hwp);
 }
 
-static Bool
-cfb8_16ScreenInit(ScreenPtr pScreen, pointer pbits16, pointer pbits8,
-                  int xsize, int ysize, int dpix, int dpiy,
-                  int width16, int width8)
-{
-    return
-        (fbOverlaySetupScreen(pScreen, pbits16, pbits8, xsize, ysize,
-                              dpix, dpiy, width16, width8, 16, 8) &&
-         fbOverlayFinishScreenInit(pScreen, pbits16, pbits8, xsize, ysize,
-                                   dpix, dpiy, width16, width8, 16, 8, 16, 8));
-}
-
 /* Mandatory */
 static Bool
 CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
@@ -3946,22 +3880,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Map the Chips memory and possible MMIO areas */
     if (!chipsMapMem(pScrn))
 	return FALSE;
-
-    /* Setup a pointer to the overlay if needed */
-    if (cPtr->Flags & ChipsOverlay8plus16) {
-	cPtr->FbOffset16 = pScrn->displayWidth * pScrn->virtualY;
-	cPtr->FbSize16 =  (pScrn->displayWidth << 1) * pScrn->virtualY;
-	if (cPtr->FbSize16 > (cPtr->FbMapSize - cPtr->FrameBufferSize)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Too little memory for overlay. Disabling.\n");
-	    cPtr->Flags &= ~ChipsOverlay8plus16;
-	}
-	if ((pScrn->displayWidth > 1024) || (pScrn->virtualY > 1024)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Max overlay Width/Height 1024 pixels. Disabling.\n");
-	    cPtr->Flags &= ~ChipsOverlay8plus16;
-	}
-    }
 
     /* Setup the MMIO register access functions if need */
     if (cPtr->UseFullMMIO && cPtr->MMIOBaseVGA) {
@@ -4035,18 +3953,10 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miClearVisualTypes();
 
     /* Setup the visuals we support. */
-    if ((pScrn->bitsPerPixel == 16) && (cPtr->Flags & ChipsOverlay8plus16)){
-	if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
-			      pScrn->rgbBits, PseudoColor))
-		return FALSE;
-	if (!miSetVisualTypes(16, TrueColorMask, pScrn->rgbBits, TrueColor))
-		return FALSE;
-    } else {
-      if (!miSetVisualTypes(pScrn->depth,
+    if (!miSetVisualTypes(pScrn->depth,
 			    miGetDefaultVisualMask(pScrn->depth),
 			    pScrn->rgbBits, pScrn->defaultVisual))
-	return FALSE;
-    }
+        return FALSE;
     miSetPixmapDepths ();
 
     /*
@@ -4090,13 +4000,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	break;
 #endif
     case 16:
-      if (cPtr->Flags & ChipsOverlay8plus16) {
-	  ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart + 
-				  cPtr->FbOffset16, FBStart, width, 
-				  height, pScrn->xDpi, pScrn->yDpi,
-				  displayWidth, displayWidth);
-	  break;
-      }
     default:
 	ret = fbScreenInit(pScreen, FBStart,
  		        width,height,
@@ -4244,9 +4147,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (pScrn->bitsPerPixel < 8)
 	    freespace = allocatebase - pScrn->displayWidth * 
 		    pScrn->virtualY / 2;
-	else if ((pScrn->bitsPerPixel == 16) && (cPtr->Flags & ChipsOverlay8plus16))
-	    freespace = allocatebase - pScrn->displayWidth * 
-		    pScrn->virtualY - cPtr->FbSize16;
 	else	
 	    freespace = allocatebase - pScrn->displayWidth * 
 		    pScrn->virtualY * (pScrn->bitsPerPixel >> 3);
@@ -4369,9 +4269,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    AvailFBArea.y2 = cAcl->CacheEnd /
 		(pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
 
-	    if (!(cPtr->Flags & ChipsOverlay8plus16)) {     
-		xf86InitFBManager(pScreen, &AvailFBArea); 
-	    }
+	    xf86InitFBManager(pScreen, &AvailFBArea); 
 	}
 	if (cPtr->Flags & ChipsAccelSupport) {
 	    if (IS_HiQV(cPtr)) {
@@ -4425,16 +4323,10 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
     
-    if ((cPtr->Flags & ChipsOverlay8plus16) && (pScrn->bitsPerPixel == 16)) {
-	if(!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits, chipsLoadPalette,
-		NULL, CMAP_RELOAD_ON_MODE_SWITCH))
-	    return FALSE;
-    } else {
-	if(!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits,
+    if(!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits,
 		(pScrn->depth == 16 ? chipsLoadPalette16 : chipsLoadPalette),
 		NULL, CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
-	    return FALSE;
-    }
+	return FALSE;
     
 #ifndef XSERVER_LIBPCIACCESS
     racflag = RAC_COLORMAP;
@@ -4448,8 +4340,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86SetSilkenMouse(pScreen);
 #endif
 
-	if ((!(cPtr->Flags & ChipsOverlay8plus16)) 
-	    && (cPtr->Flags & ChipsVideoSupport)
+	if ((cPtr->Flags & ChipsVideoSupport)
 	    && (cPtr->Flags & ChipsLinearSupport)) {
 	    CHIPSInitVideo(pScreen);
     }
@@ -4522,10 +4413,7 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 	Base >>= 3;
 	break;
     case 16:
-	if (!(cPtr->Flags & ChipsOverlay8plus16))
-	   Base >>= 1;
-	else
-	   Base >>= 2;
+	Base >>= 1;
 	break;
     case 24:
 	if (!IS_HiQV(cPtr))
@@ -4579,14 +4467,6 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 
 	cPtr->writeIOSS(cPtr, IOSS);
 	cPtr->writeMSS(cPtr, hwp, MSS);
-    }
-
-    if (cPtr->Flags & ChipsOverlay8plus16) {
-	Base = (Base << 3) & ~(unsigned long)0xF;
-
-	cPtr->writeMR(cPtr, 0x22, (cPtr->FbOffset16 + Base) & 0xF8);
-	cPtr->writeMR(cPtr, 0x23, ((cPtr->FbOffset16 + Base) >> 8) & 0xFF);
-	cPtr->writeMR(cPtr, 0x24, ((cPtr->FbOffset16 + Base) >> 16) & 0xFF);
     }
 
 }
@@ -4652,13 +4532,6 @@ CHIPSValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
-    if (flags & MODECHECK_FINAL) {
-    /* Don't subtract FrambufferSize here as it should be subtracted already */
-    if ((cPtr->Flags & ChipsOverlay8plus16) 
-      && ((pScrn->videoRam<<10) - pScrn->displayWidth * 3 * pScrn->virtualY 
-	  < 0))
-	return MODE_MEM;
-    }
     /* The tests here need to be expanded */
     if ((mode->Flags & V_INTERLACE) && (cPtr->PanelType & ChipsLCD))
 	return MODE_NO_INTERLACE;
@@ -5544,12 +5417,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     } else {
 	ChipsStd->Attribute[0x10] = 0x01;   /* mode */
     }
-    if ((pScrn->bitsPerPixel == 16) && (cPtr->Flags & ChipsOverlay8plus16)) {
-	/* Make sure that the overlay isn't visible in the overscan region */
-	if (ChipsStd->Attribute[0x11] == pScrn->colorKey)
-	    ChipsStd->Attribute[0x11] = pScrn->colorKey - 1;
-    } else
-	ChipsStd->Attribute[0x11] = 0x00;   /* overscan (border) color */
+    ChipsStd->Attribute[0x11] = 0x00;   /* overscan (border) color */
     ChipsStd->Attribute[0x12] = 0x0F;   /* enable all color planes */
     ChipsStd->Attribute[0x13] = 0x00;   /* horiz pixel panning 0 */
 
@@ -5558,8 +5426,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* set virtual screen width */
     tmp = pScrn->displayWidth >> 3;
     if (pScrn->bitsPerPixel == 16) {
-	if (!(cPtr->Flags & ChipsOverlay8plus16))
-	    tmp <<= 1;		       /* double the width of the buffer */
+	tmp <<= 1;		       /* double the width of the buffer */
     } else if (pScrn->bitsPerPixel == 24) {
 	tmp += tmp << 1;
     } else if (pScrn->bitsPerPixel == 32) {
@@ -5688,8 +5555,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* centering/stretching */
     if (!xf86ReturnOptValBool(cPtr->Options, OPTION_SUSPEND_HACK, FALSE)) {
-	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE) ||
-	(cPtr->Flags & ChipsOverlay8plus16)) {
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE)) {
 	    ChipsNew->FR[0x40] &= 0xDF;    /* Disable Horizontal stretching */
 	    ChipsNew->FR[0x48] &= 0xFB;    /* Disable vertical stretching */
 	    ChipsNew->XR[0xA0] = 0x10;     /* Disable cursor stretching */
@@ -5709,8 +5575,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     }
 
-    if ((xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, TRUE))
-		|| (cPtr->Flags & ChipsOverlay8plus16)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, TRUE)) {
 	ChipsNew->FR[0x40] |= 0x3;    /* Enable Horizontal centering */
 	ChipsNew->FR[0x48] |= 0x3;    /* Enable Vertical centering */
     } else {
@@ -5723,8 +5588,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->XR[0x82] |=0x02;
 
     /* software mode flag */
-    ChipsNew->XR[0xE2] = chipsVideoMode(((cPtr->Flags & ChipsOverlay8plus16) ?
-	8 : pScrn->depth), (cPtr->PanelType & ChipsLCD) ?
+    ChipsNew->XR[0xE2] = chipsVideoMode((pScrn->depth), (cPtr->PanelType & ChipsLCD) ?
 	min(mode->CrtcHDisplay, cPtr->PanelSize.HDisplay) :
 	mode->CrtcHDisplay, mode->CrtcVDisplay);
 #ifdef DEBUG
@@ -5762,7 +5626,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	}
     }	    
     /* bpp depend */
-    if ((pScrn->bitsPerPixel == 16) && (!(cPtr->Flags & ChipsOverlay8plus16))) {
+    if (pScrn->bitsPerPixel == 16) {
 	ChipsNew->XR[0x81] = (ChipsNew->XR[0x81] & 0xF0) | 0x4;
 	if (cPtr->Flags & ChipsGammaSupport)
 	    ChipsNew->XR[0x82] |= 0x0C;
@@ -5915,60 +5779,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Turn off multimedia by default as it degrades performance */
     ChipsNew->XR[0xD0] &= 0x0f;	 
     
-    /* Setup the video/overlay */
-    if (cPtr->Flags & ChipsOverlay8plus16) {
-	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
-#ifdef SAR04
-	ChipsNew->XR[0x4F] = 0x2A;	/* SAR04 >352 pixel overlay width */
-#endif
-	ChipsNew->MR[0x1E] &= 0xE0;	/* Set Zoom and Direction */
-	if ((!(cPtr->PanelType & ChipsLCD)) && (mode->Flags & V_INTERLACE))
-	    ChipsNew->MR[0x1E] |= 0x10;	/* Interlace */
-	ChipsNew->MR[0x1F] &= 0x14;	/* Mask reserved bits */
-	ChipsNew->MR[0x1F] |= 0x08;	/* RGB 16bpp */
-	if (pScrn->weight.green == 5)
-	    ChipsNew->MR[0x1F] |= 0x01;	/* RGB 15bpp */
-
-	ChipsNew->MR[0x20] &= 0x03;	/* Mask reserved bits */
-	ChipsNew->MR[0x20] |= 0x80;	/* Auto Centre, Use mem ptr1 */
-	ChipsNew->MR[0x22] = cPtr->FbOffset16 & 0xF8;	/* Setup Pointer 1 */
-	ChipsNew->MR[0x23] = (cPtr->FbOffset16 >> 8) & 0xFF;
-	ChipsNew->MR[0x24] = (cPtr->FbOffset16 >> 16) & 0xFF;
-	ChipsNew->MR[0x25] = cPtr->FbOffset16 & 0xF8;	/* Setup Pointer 2 */
-	ChipsNew->MR[0x26] = (cPtr->FbOffset16 >> 8) & 0xFF;
-	ChipsNew->MR[0x27] = (cPtr->FbOffset16 >> 16) & 0xFF;
-	ChipsNew->MR[0x28] = (pScrn->displayWidth >> 2) - 1; /* Width */ 
-	ChipsNew->MR[0x34] = (pScrn->displayWidth >> 2) - 1;
-
-	/* Left Edge of Overlay */
-	ChipsNew->MR[0x2A] = cPtr->OverlaySkewX;
-	ChipsNew->MR[0x2B] &= 0xF8;	/* Mask reserved bits */
-	ChipsNew->MR[0x2B] |= ((cPtr->OverlaySkewX >> 8) & 0x7);
-	/* Right Edge of Overlay */
-	ChipsNew->MR[0x2C] = (cPtr->OverlaySkewX + pScrn->displayWidth - 
-							1) & 0xFF;
-	ChipsNew->MR[0x2D] &= 0xF8;	/* Mask reserved bits */
-	ChipsNew->MR[0x2D] |= ((cPtr->OverlaySkewX + pScrn->displayWidth -
-							1) >> 8) & 0x07;
-	/* Top Edge of Overlay */
-	ChipsNew->MR[0x2E] = cPtr->OverlaySkewY;
-	ChipsNew->MR[0x2F] &= 0xF8;
-	ChipsNew->MR[0x2F] |= ((cPtr->OverlaySkewY >> 8) & 0x7);
-	/* Bottom Edge of Overlay*/
-	ChipsNew->MR[0x30] = (cPtr->OverlaySkewY + pScrn->virtualY - 1 )& 0xFF;
-	ChipsNew->MR[0x31] &= 0xF8;	/* Mask reserved bits */
-	ChipsNew->MR[0x31] |= ((cPtr->OverlaySkewY + pScrn->virtualY - 
-							1 ) >> 8) & 0x07;
-
-	ChipsNew->MR[0x3C] &= 0x18;	/* Mask reserved bits */
-	ChipsNew->MR[0x3C] |= 0x07;	/* Enable keyed overlay window */
-	ChipsNew->MR[0x3D] = 0x00;
-	ChipsNew->MR[0x3E] = 0x00;
-	ChipsNew->MR[0x3F] = pScrn->colorKey; /* 8bpp transparency key */
-	ChipsNew->MR[0x40] = 0xFF;
-	ChipsNew->MR[0x41] = 0xFF;
-	ChipsNew->MR[0x42] = 0x00;
-    } else if (cPtr->Flags & ChipsVideoSupport) {
+    if (cPtr->Flags & ChipsVideoSupport) {
 #if 0   /* if we do this even though video isn't playing we kill performance */
 	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
 #endif
@@ -6877,8 +6688,7 @@ chipsRestoreExtendedRegs(ScrnInfoPtr pScrn, CHIPSRegPtr Regs)
 	}
 
 	/* Set SAR04 multimedia register correctly */
-	if ((cPtr->Flags & ChipsOverlay8plus16)
-	    || (cPtr->Flags & ChipsVideoSupport)) {
+	if ((cPtr->Flags & ChipsVideoSupport)) {
 #ifdef SAR04
 	    cPtr->writeXR(cPtr, 0x4E, 0x04);
 	    if (cPtr->readXR(cPtr, 0x4F) != Regs->XR[0x4F])

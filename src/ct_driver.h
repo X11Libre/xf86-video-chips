@@ -114,7 +114,6 @@ typedef struct {
 /* Options flags for the C&T chipsets */
 #define ChipsHWCursor		0x00001000
 #define ChipsShadowFB		0x00002000
-#define ChipsOverlay8plus16	0x00004000
 #define ChipsUseNewFB		0x00008000
 
 /* Architecture type flags */

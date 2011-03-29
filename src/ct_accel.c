@@ -428,19 +428,7 @@ chips_imagewrite:
         infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 #endif
 
-
-#ifdef CHIPS_HIQV
-    if (XAAInit(pScreen, infoPtr)) {
-	if (cPtr->Flags & ChipsOverlay8plus16)      
-	    return(XAAInitDualFramebufferOverlay(pScreen,
-						 CTNAME(DepthChange)));
-	else
-	    return TRUE;
-    } else
-	return FALSE;
-#else
     return(XAAInit(pScreen, infoPtr));
-#endif
 }
 
 #ifdef CHIPS_HIQV
@@ -1243,11 +1231,6 @@ CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 #endif
     w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
-#ifdef CHIPS_HIQV
-    if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16) &&
-	    (pScrn->depth == 8))
-	ctSETPITCH(cAcl->PitchInBytes << 1, cAcl->PitchInBytes);
-#endif
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
@@ -1271,10 +1254,6 @@ CTNAME(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     patternaddr = (paty * pScrn->displayWidth + 
 		   (patx & ~0x3F)) * cAcl->BytesPerPixel;
     cAcl->patternyrot = (patx & 0x3F) >> 3;
-#ifdef CHIPS_HIQV
-    if (cPtr->Flags & ChipsOverlay8plus16)
-	patternaddr += cPtr->FbOffset16;
-#endif
 
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);
@@ -1338,10 +1317,7 @@ CTNAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
 
 #ifdef CHIPS_HIQV
     patternaddr = paty * pScrn->displayWidth + patx;
-    if (cPtr->Flags & ChipsOverlay8plus16)
-	patternaddr = patternaddr * 2 + cPtr->FbOffset16;
-    else
-	patternaddr *= cAcl->BytesPerPixel;
+    patternaddr *= cAcl->BytesPerPixel;
 #else
     patternaddr = (paty * pScrn->displayWidth + patx) * cAcl->BytesPerPixel;
 #endif
@@ -1593,10 +1569,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     dwords = (((skipleft  + bytesPerLine + 0x7) & ~0x7)) >> 2;
     destaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
     destpitch = pScrn->displayWidth * (bpp >> 3);
-    if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16))
-	destaddr += cPtr->FbOffset16;
-    else
-	destaddr += cAcl->FbOffset;
+    destaddr += cAcl->FbOffset;
 
     ctBLTWAIT;
 
@@ -1681,10 +1654,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	y++;
 
 	destaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
-	if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16))
-	    destaddr += cPtr->FbOffset16;
-	else
-	    destaddr += cAcl->FbOffset;
+	destaddr += cAcl->FbOffset;
 
 	ctBLTWAIT;
 	ctSETDSTADDR(destaddr);
@@ -1717,10 +1687,7 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     dwords = (((bytesPerLine + 0x7) & ~0x7)) >> 2;
     srcaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
     srcpitch = pScrn->displayWidth * (bpp >> 3);
-    if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16))
-	srcaddr += cPtr->FbOffset16;
-    else
-	srcaddr += cAcl->FbOffset;
+    srcaddr += cAcl->FbOffset;
 
     ctBLTWAIT;
     ctSETROP( ctDSTSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM | 
@@ -1755,10 +1722,7 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	dst += dstwidth;
 	y++;
 	srcaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
-	if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16))
-	    srcaddr += cPtr->FbOffset16;
-	else
-	    srcaddr += cAcl->FbOffset;
+	srcaddr += cAcl->FbOffset;
 	ctBLTWAIT;
 	ctSETSRCADDR(srcaddr);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);

@@ -56,8 +56,7 @@ CHIPSInitVideo(ScreenPtr pScreen)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     int num_adaptors;
 	
-    if (!(cPtr->Flags & ChipsOverlay8plus16) &&
-       (cPtr->Flags & ChipsVideoSupport)) {
+    if ((cPtr->Flags & ChipsVideoSupport)) {
 	newAdaptor = CHIPSSetupImageVideo(pScreen);
 	CHIPSInitOffscreenImages(pScreen);
     }
