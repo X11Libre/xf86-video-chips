@@ -3,6 +3,12 @@
 #  include <machine/pio.h>
 #  include <machine/sysarch.h>
 #else
+#  if defined(__linux__)
+/* Can't because <sys/iopl.h> provides conflicting inb, outb, etc
+ * #    include <sys/io.h>
+ */
+int iopl(int level);
+#  endif
 #  if defined(SVR4) && defined(i386)
 #    include <sys/types.h>
 #    ifdef NCR
