@@ -44,9 +44,6 @@ XORG_DEFAULT_OPTIONS
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
-# Checks for programs.
-AM_PROG_CC_C_O
-
 AH_TOP([#include "xorg-server.h"])
 
 # Define a configure option for an alternate module directory
