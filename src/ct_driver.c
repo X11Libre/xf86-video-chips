@@ -949,7 +949,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 		}
 
 	    }
-	    xfree(usedChips);
+	    free(usedChips);
 	}
     }
 
@@ -981,12 +981,12 @@ CHIPSProbe(DriverPtr drv, int flags)
 		pScrn->ValidMode     = CHIPSValidMode;
 		foundScreen = TRUE;
 	    }
-	    xfree(usedChips);
+	    free(usedChips);
 	}
     }
 #endif
     
-    xfree(devSections);
+    free(devSections);
     return foundScreen;
 }
 #endif
@@ -4126,7 +4126,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 	if (!miInitializeBanking(pScreen, pScrn->virtualX, pScrn->virtualY,
 				 pScrn->displayWidth, pBankInfo)) {
-	    xfree(pBankInfo);
+	    free(pBankInfo);
 	    pBankInfo = NULL;
 	    return FALSE;
 	}
