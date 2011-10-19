@@ -276,8 +276,8 @@ typedef struct _CHIPSRec {
 #endif
     int			Chipset;
     EntityInfoPtr       pEnt;
-    IOADDRESS		PIOBase;
-    CARD32		IOAddress;
+    unsigned long	PIOBase;
+    unsigned long	IOAddress;
     unsigned long	FbAddress;
     unsigned int	IOBase;
     unsigned char *	FbBase;

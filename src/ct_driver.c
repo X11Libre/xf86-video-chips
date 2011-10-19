@@ -1446,7 +1446,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     hwp = VGAHWPTR(pScrn);
     vgaHWGetIOBase(hwp);
+#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 12
     cPtr->PIOBase = hwp->PIOOffset;
+#else
+    cPtr->PIOBase = 0;
+#endif
+
     /*
      * Must allow ensure that storage for the 2nd set of vga registers is
      * allocated for dual channel cards
