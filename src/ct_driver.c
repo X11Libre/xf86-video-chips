@@ -1345,10 +1345,9 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     
     if (cPtr->Flags & ChipsAccelSupport) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
-	    vbeFree(cPtr->pVbe);
-	    cPtr->pVbe = NULL;
-	    CHIPSFreeRec(pScrn);
-	    return FALSE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Falling back to shadowfb\n");
+	    cPtr->Flags &= ~(ChipsAccelSupport);
+	    cPtr->Flags |= ChipsShadowFB;
 	}
     }
 
