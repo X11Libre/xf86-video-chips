@@ -1444,6 +1444,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
         return FALSE;
 
     hwp = VGAHWPTR(pScrn);
+    vgaHWSetStdFuncs(hwp);
     vgaHWGetIOBase(hwp);
 #if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 12
     cPtr->PIOBase = hwp->PIOOffset;
