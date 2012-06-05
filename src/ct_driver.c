@@ -79,9 +79,6 @@
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
 
-/* Drivers for PCI hardware need this */
-#include "xf86PciInfo.h"
-
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
@@ -479,6 +476,19 @@ static DisplayModeRec ChipsNTSCMode = {
 
 
 #ifdef XSERVER_LIBPCIACCESS
+
+#ifndef _XF86_PCIINFO_H
+#define PCI_VENDOR_CHIPSTECH		0x102C
+/* Chips & Tech */
+#define PCI_CHIP_65545			0x00D8
+#define PCI_CHIP_65548			0x00DC
+#define PCI_CHIP_65550			0x00E0
+#define PCI_CHIP_65554			0x00E4
+#define PCI_CHIP_65555			0x00E5
+#define PCI_CHIP_68554			0x00F4
+#define PCI_CHIP_69000			0x00C0
+#define PCI_CHIP_69030			0x0C30
+#endif
 
 #define CHIPS_DEVICE_MATCH(d, i) \
   { PCI_VENDOR_CHIPSTECH, (d), PCI_MATCH_ANY, PCI_MATCH_ANY, 0, 0, (i) }
