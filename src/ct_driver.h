@@ -38,6 +38,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "compat-api.h"
+
 /* Supported chipsets */
 typedef enum {
     CHIPS_CT65520,
