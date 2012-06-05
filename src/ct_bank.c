@@ -63,13 +63,13 @@
 #define arm32_drain_writebuf()
 #endif
 
-#define ChipsBank(pScreen) CHIPSPTR(xf86Screens[pScreen->myNum])->Bank
+#define ChipsBank(pScreen) CHIPSPTR(xf86ScreenToScrn(pScreen))->Bank
 
 #ifdef DIRECT_REGISTER_ACCESS
 int
 CHIPSSetRead(ScreenPtr pScreen, int bank)
 { 
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 3) & 0xFF) << 8) | 0x10));
 
@@ -88,7 +88,7 @@ CHIPSSetRead(ScreenPtr pScreen, int bank)
 int
 CHIPSSetWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 3) & 0xFF) << 8) | 0x11));
 
@@ -107,7 +107,7 @@ CHIPSSetWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSSetReadWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 3) & 0xFF) << 8) | 0x10));
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 3) & 0xFF) << 8) | 0x11));
@@ -126,7 +126,7 @@ CHIPSSetReadWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSSetReadPlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 5) & 0xFF) << 8) | 0x10));
 
@@ -144,7 +144,7 @@ CHIPSSetReadPlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSSetWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 5) & 0xFF) << 8) | 0x11));
 
@@ -162,7 +162,7 @@ CHIPSSetWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSSetReadWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 5) & 0xFF) << 8) | 0x10));
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 5) & 0xFF) << 8) | 0x11));
@@ -181,7 +181,7 @@ CHIPSSetReadWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetRead(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 3) & 0xFF) << 8) | 0x10));
@@ -204,7 +204,7 @@ CHIPSWINSetRead(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 3) & 0xFF) << 8) | 0x11));
@@ -226,7 +226,7 @@ CHIPSWINSetWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetReadWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 3) & 0xFF) << 8) | 0x10));
@@ -250,7 +250,7 @@ CHIPSWINSetReadWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetReadPlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 5) & 0xFF) << 8) | 0x10));
@@ -272,7 +272,7 @@ CHIPSWINSetReadPlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 5) & 0xFF) << 8) | 0x11));
@@ -294,7 +294,7 @@ CHIPSWINSetWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetReadWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 5) & 0xFF) << 8) | 0x10));
@@ -318,7 +318,7 @@ CHIPSWINSetReadWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSHiQVSetReadWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     outw(cPtr->PIOBase + 0x3D6, (((bank & 0x7F) << 8) | 0x0E));
 
@@ -336,7 +336,7 @@ CHIPSHiQVSetReadWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSHiQVSetReadWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     outw(cPtr->PIOBase + 0x3D6, ((((bank << 2) & 0x7F) << 8) | 0x0E));
 
@@ -356,7 +356,7 @@ CHIPSHiQVSetReadWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSSetRead(ScreenPtr pScreen, int bank)
 { 
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
   
     cPtr->writeXR(cPtr, 0x10, ((bank << 3) & 0xFF));
 
@@ -375,7 +375,7 @@ CHIPSSetRead(ScreenPtr pScreen, int bank)
 int
 CHIPSSetWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
   
     cPtr->writeXR(cPtr, 0x11, ((bank << 3) & 0xFF));
 
@@ -394,7 +394,7 @@ CHIPSSetWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSSetReadWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
   
     cPtr->writeXR(cPtr, 0x10, ((bank << 3) & 0xFF));
     cPtr->writeXR(cPtr, 0x11, ((bank << 3) & 0xFF));
@@ -413,7 +413,7 @@ CHIPSSetReadWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSSetReadPlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
   
     cPtr->writeXR(cPtr, 0x10, ((bank << 5) & 0xFF));
 
@@ -431,7 +431,7 @@ CHIPSSetReadPlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSSetWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
   
     cPtr->writeXR(cPtr, 0x11, ((bank << 5) & 0xFF));
 
@@ -449,7 +449,7 @@ CHIPSSetWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSSetReadWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
   
     cPtr->writeXR(cPtr, 0x10, ((bank << 5) & 0xFF));
     cPtr->writeXR(cPtr, 0x11, ((bank << 5) & 0xFF));
@@ -468,7 +468,7 @@ CHIPSSetReadWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetRead(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
   
     cPtr->writeXR(cPtr, 0x10, ((bank << 3) & 0xFF));
@@ -490,7 +490,7 @@ CHIPSWINSetRead(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     cPtr->writeXR(cPtr, 0x11, ((bank << 3) & 0xFF));
@@ -511,7 +511,7 @@ CHIPSWINSetWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetReadWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     cPtr->writeXR(cPtr, 0x10, ((bank << 3) & 0xFF));
@@ -533,7 +533,7 @@ CHIPSWINSetReadWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetReadPlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     cPtr->writeXR(cPtr, 0x10, ((bank << 5) & 0xFF));
@@ -554,7 +554,7 @@ CHIPSWINSetReadPlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     cPtr->writeXR(cPtr, 0x11, ((bank << 5) & 0xFF));
@@ -575,7 +575,7 @@ CHIPSWINSetWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSWINSetReadWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
     register unsigned char tmp;
 
     cPtr->writeXR(cPtr, 0x10, ((bank << 5) & 0xFF));
@@ -597,7 +597,7 @@ CHIPSWINSetReadWritePlanar(ScreenPtr pScreen, int bank)
 int
 CHIPSHiQVSetReadWrite(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     cPtr->writeXR(cPtr, 0x0E, bank & 0x7F);
 
@@ -615,7 +615,7 @@ CHIPSHiQVSetReadWrite(ScreenPtr pScreen, int bank)
 int
 CHIPSHiQVSetReadWritePlanar(ScreenPtr pScreen, int bank)
 {
-    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScreen->myNum]);
+    CHIPSPtr cPtr = CHIPSPTR(xf86ScreenToScrn(pScreen));
 
     cPtr->writeXR(cPtr, 0x0E, (bank << 2) & 0x7F);
 

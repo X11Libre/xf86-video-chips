@@ -3850,7 +3850,7 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 static Bool
 CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     vgaHWPtr hwp;
     CHIPSPtr cPtr;
     CHIPSACLPtr cAcl;
@@ -4659,7 +4659,7 @@ CHIPSSaveScreen(ScreenPtr pScreen, int mode)
     unblank = xf86IsUnblank(mode);
 
     if (pScreen != NULL)
-	pScrn = xf86Screens[pScreen->myNum];
+	pScrn = xf86ScreenToScrn(pScreen);
 
     if (unblank)
 	SetTimeSinceLastInputEvent();

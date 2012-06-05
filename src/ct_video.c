@@ -50,7 +50,7 @@ static Atom xvColorKey;
 void 
 CHIPSInitVideo(ScreenPtr pScreen)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
     XF86VideoAdaptorPtr newAdaptor = NULL;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -229,7 +229,7 @@ CHIPSResetVideo(ScrnInfoPtr pScrn)
 static XF86VideoAdaptorPtr 
 CHIPSSetupImageVideo(ScreenPtr pScreen)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     XF86VideoAdaptorPtr adapt;
     CHIPSPortPrivPtr pPriv;
@@ -463,7 +463,7 @@ CHIPSAllocateMemory(
 	xf86FreeOffscreenLinear(linear);
    }
 
-   pScreen = screenInfo.screens[pScrn->scrnIndex];
+   pScreen = xf86ScrnToScreen(pScrn);
 
    new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8, 
    						NULL, NULL, NULL);
