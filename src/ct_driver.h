@@ -291,7 +291,7 @@ typedef struct _CHIPSRec {
     unsigned char *	ShadowPtr;
     int			ShadowPitch;
     int                 Rotate;
-    void		(*PointerMoved)(int index, int x, int y);
+    void		(*PointerMoved)(SCRN_ARG_TYPE arg, int x, int y);
     int                 FbOffset16;
     int                 FbSize16;  
     OptionInfoPtr	Options;
@@ -384,8 +384,8 @@ extern unsigned int ChipsReg32HiQV[];
 
 /* Prototypes */
 
-void CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags);
-Bool CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+void CHIPSAdjustFrame(ADJUST_FRAME_ARGS_DECL);
+Bool CHIPSSwitchMode(SWITCH_MODE_ARGS_DECL);
 
 /* video */
 void CHIPSInitVideo(ScreenPtr pScreen);
@@ -434,7 +434,7 @@ void     chipsRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void     chipsRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void     chipsRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void     chipsRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
-void     chipsPointerMoved(int index, int x, int y);
+void     chipsPointerMoved(SCRN_ARG_TYPE arg, int x, int y);
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 # define BE_SWAP_APRETURE(pScrn,cPtr) \

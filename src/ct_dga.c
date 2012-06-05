@@ -198,21 +198,21 @@ CHIPS_SetMode(
 	/* put the ScreenParameters back */
        if (cPtr->DGAactive) {
            pScrn->displayWidth = OldDisplayWidth[index];
-	   pScrn->EnterVT(pScrn->scrnIndex,0);
+	   pScrn->EnterVT(VT_FUNC_ARGS);
 
 	   cPtr->DGAactive = FALSE;
        }
    } else {
 	if(!cPtr->DGAactive) {  /* save the old parameters */
 	    OldDisplayWidth[index] = pScrn->displayWidth;
-	    pScrn->LeaveVT(pScrn->scrnIndex,0);
+	    pScrn->LeaveVT(VT_FUNC_ARGS);
 	    cPtr->DGAactive = TRUE;
 	}
 
 	pScrn->displayWidth = pMode->bytesPerScanline / 
 			      (pMode->bitsPerPixel >> 3);
 
-        CHIPSSwitchMode(index, pMode->mode, 0);
+        CHIPSSwitchMode(SWITCH_MODE_ARGS(pScrn, pMode->mode));
    }
    
    return TRUE;
@@ -243,7 +243,7 @@ CHIPS_SetViewport(
 	while (!((hwp->readST01(hwp)) & 0x08)){};
     }
 
-    CHIPSAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
+    CHIPSAdjustFrame(ADJUST_FRAME_ARGS(pScrn, x, y));
     cPtr->DGAViewportStatus = 0;  /* CHIPSAdjustFrame loops until finished */
 }
 
