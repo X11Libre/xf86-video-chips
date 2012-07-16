@@ -71,6 +71,8 @@
 #define CTNAME(subname) CATNAME(CHIPS,subname)
 #endif
 
+#ifdef HAVE_XAA_H
+
 #ifdef DEBUG
 # define DEBUG_P(x) ErrorF(x"\n");
 #elif defined X_DEBUG
@@ -166,10 +168,11 @@ static void  CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 # define BE_SWAPON(pScrn,cPtr)
 # define BE_SWAPOFF(pScrn,cPtr)
 #endif
-
+#endif
 Bool 
 CTNAME(AccelInit)(ScreenPtr pScreen)
 {
+#ifdef HAVE_XAA_H
     XAAInfoRecPtr infoPtr;
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -426,8 +429,12 @@ chips_imagewrite:
 #endif
 
     return(XAAInit(pScreen, infoPtr));
+#else
+    return FALSE;
+#endif
 }
 
+#ifdef HAVE_XAA_H
 #ifdef CHIPS_HIQV
 void
 CTNAME(DepthChange)(ScrnInfoPtr pScrn, int depth)
@@ -459,15 +466,19 @@ CTNAME(DepthChange)(ScrnInfoPtr pScrn, int depth)
 }
 #endif
 
+#endif
 void
 CTNAME(Sync)(ScrnInfoPtr pScrn)
 {
+#ifdef HAVE_XAA_H
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     DEBUG_P("sync");
     ctBLTWAIT;
     BE_SWAPON(pScrn,cPtr);
+#endif
 }
 
+#ifdef HAVE_XAA_H
 static void
 CTNAME(8SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask)
@@ -1733,5 +1744,7 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     cPtr->AccelInfoRec->NeedToSync = TRUE;
 }
 #endif /* ReadPixmap */
+
+#endif
 
 #endif

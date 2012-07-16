@@ -130,6 +130,7 @@
 
 #include "dixstruct.h"
 
+#include "xf86fbman.h"
 /* Driver specific headers */
 #include "ct_driver.h"
 
@@ -4515,8 +4516,10 @@ CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL)
 	cPtrEnt = pPriv->ptr;
 	cPtrEnt->refCount--;
     }
+#ifdef HAVE_XAA_H
     if (cPtr->AccelInfoRec)
 	XAADestroyInfoRec(cPtr->AccelInfoRec);
+#endif
     if (cPtr->CursorInfoRec)
 	xf86DestroyCursorInfoRec(cPtr->CursorInfoRec);
     free(cPtr->ShadowPtr);

@@ -6,8 +6,6 @@
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86Pci.h"
-#include "xaa.h"
-#include "xaalocal.h"
 #include "ct_driver.h"
 #include "dgaproc.h"
 
@@ -17,11 +15,13 @@ static Bool CHIPS_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
 static Bool CHIPS_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  CHIPS_GetViewport(ScrnInfoPtr);
 static void CHIPS_SetViewport(ScrnInfoPtr, int, int, int);
+#ifdef HAVE_XAA_H
 static void CHIPS_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void CHIPS_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 #if 0
 static void CHIPS_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
 					unsigned long);
+#endif
 #endif
 
 static
@@ -31,6 +31,7 @@ DGAFunctionRec CHIPS_DGAFuncs = {
    CHIPS_SetMode,
    CHIPS_SetViewport,
    CHIPS_GetViewport,
+#ifdef HAVE_XAA_H
    CHIPSSync,
    CHIPS_FillRect,
    CHIPS_BlitRect,
@@ -38,6 +39,9 @@ DGAFunctionRec CHIPS_DGAFuncs = {
    CHIPS_BlitTransRect
 #else
    NULL
+#endif
+#else
+   NULL, NULL, NULL, NULL
 #endif
 };
 
@@ -48,6 +52,7 @@ DGAFunctionRec CHIPS_MMIODGAFuncs = {
    CHIPS_SetMode,
    CHIPS_SetViewport,
    CHIPS_GetViewport,
+#ifdef HAVE_XAA_H
    CHIPSMMIOSync,
    CHIPS_FillRect,
    CHIPS_BlitRect,
@@ -55,6 +60,9 @@ DGAFunctionRec CHIPS_MMIODGAFuncs = {
    CHIPS_BlitTransRect
 #else
    NULL
+#endif
+#else
+   NULL, NULL, NULL, NULL
 #endif
 };
 
@@ -65,6 +73,7 @@ DGAFunctionRec CHIPS_HiQVDGAFuncs = {
    CHIPS_SetMode,
    CHIPS_SetViewport,
    CHIPS_GetViewport,
+#ifdef HAVE_XAA_H
    CHIPSHiQVSync,
    CHIPS_FillRect,
    CHIPS_BlitRect,
@@ -72,6 +81,9 @@ DGAFunctionRec CHIPS_HiQVDGAFuncs = {
    CHIPS_BlitTransRect
 #else
    NULL
+#endif
+#else
+   NULL, NULL, NULL, NULL
 #endif
 };
 
@@ -114,9 +126,11 @@ SECOND_PASS:
 
 	currentMode->mode = pMode;
 	currentMode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
+#ifdef HAVE_XAA_H
 	if(cPtr->Flags & ChipsAccelSupport)
 	   currentMode->flags |= (cPtr->Flags & ChipsAccelSupport) 
 	     ? (DGA_FILL_RECT | DGA_BLIT_RECT) : 0;
+#endif
 	if(pMode->Flags & V_DBLSCAN)
 	   currentMode->flags |= DGA_DOUBLESCAN;
 	if(pMode->Flags & V_INTERLACE)
@@ -246,6 +260,7 @@ CHIPS_SetViewport(
     cPtr->DGAViewportStatus = 0;  /* CHIPSAdjustFrame loops until finished */
 }
 
+#ifdef HAVE_XAA_H
 static void 
 CHIPS_FillRect (
    ScrnInfoPtr pScrn, 
@@ -295,7 +310,7 @@ CHIPS_BlitTransRect(
      prohibit usage of ~0 as the key */
 }
 #endif
-
+#endif
 static Bool 
 CHIPS_OpenFramebuffer(
    ScrnInfoPtr pScrn, 

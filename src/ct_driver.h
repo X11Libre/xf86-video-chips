@@ -27,9 +27,11 @@
 #define _CT_DRIVER_H_
 
 #include "ct_pcirename.h"
+#ifdef HAVE_XAA_H
 #include "xaa.h"
-#include "vbe.h"
 #include "xaalocal.h"		/* XAA internals as we replace some of XAA */
+#endif
+#include "vbe.h"
 #include "xf86Cursor.h"
 #include "xf86i2c.h"
 #include "xf86DDC.h"
@@ -324,7 +326,9 @@ typedef struct _CHIPSRec {
     unsigned int *	Regs32;
     unsigned int	Flags;
     CARD32		Bus;
+#ifdef HAVE_XAA_H
     XAAInfoRecPtr	AccelInfoRec;
+#endif
     xf86CursorInfoPtr	CursorInfoRec;
     CHIPSACLRec		Accel;
     unsigned int	HWCursorContents;
