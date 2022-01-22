@@ -68,7 +68,7 @@ int compute_clock (
     return 1;
   }
 
-  /* Other parameters available onthe 65548 but not the 65545, and
+  /* Other parameters available on the 65548 but not the 65545, and
      not documented in the Clock Synthesizer doc in rev 1.0 of the
      65548 datasheet:
 
