@@ -37,7 +37,7 @@
 #define MemClk 1
 #define IS_MemClk(X) X&0x1
 
-int compute_clock (
+static int compute_clock (
 		   unsigned int ChipType,
 		   double target,
 		   double Fref,
@@ -161,7 +161,7 @@ int compute_clock (
   return 1;
 }
 
-int set_clock(
+static int set_clock(
 	      unsigned int ChipType,
 	      unsigned int ClockType,
 	      unsigned int ProgClock,
@@ -230,7 +230,7 @@ int set_clock(
   return 0;
 }
 
-unsigned int probe_chip(void) {
+static unsigned int probe_chip(void) {
 
   unsigned int ChipType, temp;
 
