@@ -104,14 +104,14 @@ CFLAGS="$save_CFLAGS"
 
 # Checks for functions (often defined as inlines in compiler.h)
 AC_MSG_CHECKING([for inb])
-AC_LINK_IFELSE(AC_LANG_SOURCE([
+AC_LINK_IFELSE([AC_LANG_SOURCE([
 #include "util/AsmMacros.h"
 
 int main() {
 	int x = inb(0);
 	return x;
 }
-]), [HAVE_INB=yes], [HAVE_INB=no])
+])], [HAVE_INB=yes], [HAVE_INB=no])
 AC_MSG_RESULT([$HAVE_INB])
 AM_CONDITIONAL(BUILD_UTILS, [test x$HAVE_INB = xyes])
 
