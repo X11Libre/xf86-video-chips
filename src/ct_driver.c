@@ -1926,9 +1926,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    if (xf86LoadSubModule(pScrn, "i2c")) {
 		if (chips_i2cInit(pScrn)) {
 		    if ((pMon = xf86PrintEDID(xf86DoEDID_DDC2(XF86_SCRN_ARG(pScrn),
-						      cPtr->I2C))) != NULL)
+						      cPtr->I2C))) != NULL) {
 		       ddc_done = TRUE;
 		       xf86SetDDCproperties(pScrn,pMon);
+		    }
 		}
 	    }
 	if (!ddc_done)
