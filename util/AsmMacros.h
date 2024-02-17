@@ -333,11 +333,7 @@ void outl(U16_t, U32_t);
 #   define __USLC__
 #  endif
 # endif
-# ifndef __SCO__
-#  include <sys/inline.h>
-# else
-#  include "../common/scoasm.h"
-# endif
+# include <sys/inline.h>
 # define intr_disable() asm("cli")
 # define intr_enable()  asm("sti")
 
