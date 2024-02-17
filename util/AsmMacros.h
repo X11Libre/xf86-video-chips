@@ -381,9 +381,7 @@ void outl(U16_t, U32_t);
 #else /* not _MINIX and _ACK */
 
 # if defined(__STDC__) && (__STDC__ == 1)
-#  ifndef NCR
 #  define asm __asm
-#  endif
 # endif
 # ifdef SVR4
 #  include <sys/types.h>
