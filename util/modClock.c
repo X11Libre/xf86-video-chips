@@ -2,9 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef Lynx
 #include <fnmatch.h>
-#endif
 
 #include "iopl.h"
 
@@ -328,11 +326,7 @@ int main (int argc, char *argv[]) {
   }
 
   ClockType = DotClk;
-#ifndef Lynx
   if (! fnmatch("*memClock",argv[0],FNM_PATHNAME)) {
-#else
-  if (strstr("memClock",argv[0]) != NULL) {
-#endif
     ClockType = MemClk;
   }
 

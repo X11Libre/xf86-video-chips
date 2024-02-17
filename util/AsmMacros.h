@@ -170,61 +170,6 @@ inl(short port)
 	return(*(volatile unsigned long*)(((unsigned short)(port))+IOPortBase));
 }
 #else /* __arm32__ */
-#if defined(Lynx) && defined(__powerpc__)
-extern unsigned char *ioBase;
-
-static volatile void
-eieio(void)
-{
-	__asm__ __volatile__ ("eieio");
-}
-
-static void
-outb(short port, unsigned char value)
-{
-	*(uchar *)(ioBase + port) = value; eieio();
-}
-
-static void
-outw(short port, unsigned short value)
-{
-	*(unsigned short *)(ioBase + port) = value; eieio();
-}
-
-static void
-outl(short port, unsigned long value)
-{
-	*(unsigned long *)(ioBase + port) = value; eieio();
-}
-
-static unsigned char
-inb(short port)
-{
-	unsigned char val;
-
-	val = *((unsigned char *)(ioBase + port)); eieio();
-	return(val);
-}
-
-static unsigned short
-inw(short port)
-{
-	unsigned short val;
-
-	val = *((unsigned short *)(ioBase + port)); eieio();
-	return(val);
-}
-
-static unsigned long
-inl(short port)
-{
-	unsigned long val;
-
-	val = *((unsigned long *)(ioBase + port)); eieio();
-	return(val);
-}
-
-#else
 #if defined(__FreeBSD__) && defined(__alpha__)
 
 #include <sys/types.h>
@@ -337,13 +282,12 @@ inl(short port)
 }
 
 #endif /* GCCUSESGAS */
-#endif /* Lynx && __powerpc__ */
 #endif /* arm32 */
 #endif /* linux && __sparc__ */
 #endif /* linux && __alpha__ */
 #endif /* __FreeBSD__ && __alpha__ */
 
-#if defined(linux) || defined(__arm32__) || (defined(Lynx) && defined(__powerpc__))
+#if defined(linux) || defined(__arm32__)
 
 #define intr_disable()
 #define intr_enable()
