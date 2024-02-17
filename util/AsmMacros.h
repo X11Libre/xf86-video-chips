@@ -329,9 +329,6 @@ void outl(U16_t, U32_t);
 # endif
 # ifdef SVR4
 #  include <sys/types.h>
-#  ifndef __USLC__
-#   define __USLC__
-#  endif
 # endif
 # include <sys/inline.h>
 # define intr_disable() asm("cli")
