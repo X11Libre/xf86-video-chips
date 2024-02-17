@@ -9,18 +9,11 @@
  */
 int iopl(int level);
 #  endif
-#  if defined(SVR4) && defined(i386)
+#  if defined(SVR4) && defined(i386) && defined(sun)
 #    include <sys/types.h>
-#      include <sys/sysi86.h>
-#    ifdef SVR4
-#      if !defined(sun)
-#        include <sys/seg.h>
-#      endif
-#    endif
+#    include <sys/sysi86.h>
 #    include <sys/v86.h>
-#    if defined(sun)
-#      include <sys/psw.h>
-#    endif
+#    include <sys/psw.h>
 #  endif
 #  include "AsmMacros.h"
 #endif /* NetBSD */
