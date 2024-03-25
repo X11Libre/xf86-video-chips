@@ -131,6 +131,14 @@
 /* Driver specific headers */
 #include "ct_driver.h"
 
+/* traditionally these had been defined in xf86_OSlib.h */
+#ifndef XMODE_RGB
+#define XMODE_RGB   0
+#define XMODE_NTSC  1
+#define XMODE_PAL   2
+#define XMODE_SECAM 3
+#endif
+
 /* Mandatory functions */
 static const OptionInfoRec *	CHIPSAvailableOptions(int chipid, int busid);
 static void     CHIPSIdentify(int flags);
