@@ -75,6 +75,7 @@
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
+#include "xf86Priv.h"
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -96,8 +97,12 @@
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
 
+#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 6
+#define USE_MIBANK 1
+#endif
+
 /* All drivers using the mi banking wrapper need this */
-#ifdef HAVE_ISA
+#ifdef USE_MIBANK
 #include "mibank.h"
 #endif
 
@@ -137,6 +142,10 @@
 #define XMODE_NTSC  1
 #define XMODE_PAL   2
 #define XMODE_SECAM 3
+#endif
+
+#if defined(__arm__) && defined(__NetBSD__)
+#define AVOID_VGAHW 1
 #endif
 
 /* Mandatory functions */
@@ -335,7 +344,7 @@ unsigned int ChipsReg32[] =
     0xB3D0,			        /* DR0xC address of cursor pattern   */
 };
 
-#if defined(__arm32__) && defined(__NetBSD__)
+#if defined(__arm__) && defined(__NetBSD__)
 /*
  * Built in TV output modes: These modes have been tested on NetBSD with
  * CT65550 and StrongARM. They give what seems to be the best output for
@@ -1357,7 +1366,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	}	
 	break;
     }
-    
+
+#ifdef HAVE_XAA_H
     if (cPtr->Flags & ChipsAccelSupport) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Falling back to shadowfb\n");
@@ -1365,6 +1375,13 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    cPtr->Flags |= ChipsShadowFB;
 	}
     }
+#else
+    if (!xf86LoadSubModule(pScrn, "exa")) {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Falling back to shadowfb\n");
+	cPtr->Flags &= ~(ChipsAccelSupport);
+	cPtr->Flags |= ChipsShadowFB;
+    }
+#endif
 
     if (cPtr->Flags & ChipsShadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
@@ -1423,9 +1440,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
     
-    /* All HiQV chips support 16/24/32 bpp */
-    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb | Support32bppFb |
-				SupportConvert32to24 | PreferConvert32to24))
+    /* All HiQV chips support 16/24/32 bpp, default to 16bpp for speed & vram */
+    if (!xf86SetDepthBpp(pScrn, 16, 0, 0, Support24bppFb | Support32bppFb |
+ 				SupportConvert32to24 | PreferConvert32to24))
 	return FALSE;
     else {
 	/* Check that the returned depth is one we support */
@@ -1459,7 +1476,13 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
         return FALSE;
 
     hwp = VGAHWPTR(pScrn);
+#if defined(__arm__)
+    vgaHWSetMmioFuncs(hwp, (CARD8 *)IOPortBase, 0);
+#elif defined(__powerpc__)
+    vgaHWSetMmioFuncs(hwp, ioBase, 0);
+#else
     vgaHWSetStdFuncs(hwp);
+#endif
     vgaHWGetIOBase(hwp);
 #if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 12
     cPtr->PIOBase = hwp->PIOOffset;
@@ -2398,7 +2421,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		   "FP clock set to %7.3f MHz\n",
 		   (float)(cPtr->FPclock / 1000.));
 
-#if defined(__arm32__) && defined(__NetBSD__)
+#if defined(__arm__) && defined(__NetBSD__)
     ChipsPALMode.next = pScrn->monitor->Modes;
     pScrn->monitor->Modes = &ChipsNTSCMode;
 #endif
@@ -3725,7 +3748,11 @@ CHIPSLeaveVT(VT_FUNC_ARGS_DECL)
     } else {
 	chipsHWCursorOff(cPtr, pScrn);
 	chipsRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &cPtr->SavedReg,
+#ifdef AVOID_VGAHW
+					FALSE);
+#else
 					TRUE);
+#endif
 	chipsLock(pScrn);
     }
 }
@@ -3878,9 +3905,11 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
     hwp = VGAHWPTR(pScrn);
     hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
 
+#ifndef AVOID_VGAHW
     /* Map the VGA memory */
     if (!vgaHWMapMem(pScrn))
 	return FALSE;
+#endif
 
     /* Map the Chips memory and possible MMIO areas */
     if (!chipsMapMem(pScrn))
@@ -3898,7 +3927,7 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 	DUALOPEN;
     }
 
-#if defined(__arm32__) && defined(__NetBSD__)
+#if defined(__arm__) && defined(__NetBSD__)
     if (strcmp(pScrn->currentMode->name,"PAL") == 0) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using built-in PAL TV mode\n");
 	cPtr->TVMode = XMODE_PAL;
@@ -4061,7 +4090,7 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 
     cPtr->HWCursorShown = FALSE;
 
-#ifdef HAVE_ISA
+#ifdef USE_MIBANK
     if (!(cPtr->Flags & ChipsLinearSupport)) {
 	miBankInfoPtr pBankInfo;
 
@@ -4070,7 +4099,7 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 	if (pBankInfo == NULL)
 	    return FALSE;
 	
-#if defined(__arm32__)
+#if defined(__arm__)
 	cPtr->Bank = -1;
 #endif
 	pBankInfo->pBankA = hwp->Base;
@@ -4275,6 +4304,8 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 
 	    xf86InitFBManager(pScreen, &AvailFBArea); 
 	}
+
+#ifdef HAVE_XAA_H
 	if (cPtr->Flags & ChipsAccelSupport) {
 	    if (IS_HiQV(cPtr)) {
 		CHIPSHiQVAccelInit(pScreen);
@@ -4284,6 +4315,13 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 		CHIPSAccelInit(pScreen);
 	    }
 	}
+#else
+	if (cPtr->Flags & ChipsAccelSupport) {
+	    if (IS_HiQV(cPtr)) {
+		CHIPSInitEXA(pScreen);
+	    }
+	}
+#endif
 	
 	xf86SetBackingStore(pScreen);
 #ifdef ENABLE_SILKEN_MOUSE
@@ -5227,7 +5265,12 @@ chipsSave(ScrnInfoPtr pScrn, vgaRegPtr VgaSave, CHIPSRegPtr ChipsSave)
     tmp = cPtr->readXR(cPtr, 0x02);
     cPtr->writeXR(cPtr, 0x02, tmp & ~0x18);
     /* get generic registers */
+
+#ifdef AVOID_VGAHW
+    vgaHWSave(pScrn, VgaSave, VGA_SR_CMAP | VGA_SR_MODE);
+#else
     vgaHWSave(pScrn, VgaSave, VGA_SR_ALL);
+#endif
 
     /* save clock */
     chipsClockSave(pScrn, &ChipsSave->Clock);
@@ -5676,7 +5719,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     }
     
-#if defined(__arm32__) && defined(__NetBSD__)
+#if defined(__arm__) && defined(__NetBSD__)
     if (cPtr->TVMode != XMODE_RGB) {
 	/*
 	 * Put the console into TV Out mode.

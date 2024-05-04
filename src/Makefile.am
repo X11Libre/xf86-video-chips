@@ -49,6 +49,7 @@ chips_drv_la_SOURCES = \
          ct_dga.c \
          ct_driver.c \
          ct_driver.h \
+         ct_exa.c \
 	 ct_pcirename.h \
          ct_regs.c \
          ct_shadow.c \
