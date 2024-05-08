@@ -2771,7 +2771,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     /* 32bit register address offsets */
     if ((cPtr->Flags & ChipsAccelSupport) ||
 	    (cPtr->Accel.UseHWCursor)) {
-	cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
+	cPtr->Regs32 = XNFalloc(sizeof(ChipsReg32));
 	tmp = cPtr->readXR(cPtr, 0x07);
 	for( i = 0; i < (sizeof(ChipsReg32) / sizeof(ChipsReg32[0])); i++) {
 	    cPtr->Regs32[i] =  ((ChipsReg32[i] & 0x7E03)) | ((tmp & 0x80)
@@ -3456,7 +3456,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	cPtr->Regs32 = ChipsReg32;
     else if ((cPtr->Flags & ChipsAccelSupport) ||
 	     (cPtr->Accel.UseHWCursor)) {
-	cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
+	cPtr->Regs32 = XNFalloc(sizeof(ChipsReg32));
 	tmp =  cPtr->readXR(cPtr, 0x07);
 	for (i = 0; i < (sizeof(ChipsReg32)/sizeof(ChipsReg32[0])); i++) {
 	    cPtr->Regs32[i] =
