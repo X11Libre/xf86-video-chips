@@ -782,7 +782,7 @@ CHIPSGetRec(ScrnInfoPtr pScrn)
     if (pScrn->driverPrivate != NULL)
 	return TRUE;
 
-    pScrn->driverPrivate = xnfcalloc(sizeof(CHIPSRec), 1);
+    pScrn->driverPrivate = XNFcallocarray(sizeof(CHIPSRec), 1);
 
     if (pScrn->driverPrivate == NULL)
 	return FALSE;
@@ -871,7 +871,7 @@ CHIPSPciProbe(DriverPtr drv, int entity_num, struct pci_device * dev,
 	      CHIPSEntityIndex = xf86AllocateEntityPrivateIndex();
 	    pPriv = xf86GetEntityPrivate(pScrn->entityList[0], CHIPSEntityIndex);
 	    if (!pPriv->ptr) {
-		pPriv->ptr = xnfcalloc(sizeof(CHIPSEntRec), 1);
+		pPriv->ptr = XNFcallocarray(sizeof(CHIPSEntRec), 1);
 		cPtrEnt = pPriv->ptr;
 		cPtrEnt->lastInstance = -1;
 	    } else {
@@ -955,7 +955,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 		    pPriv = xf86GetEntityPrivate(pScrn->entityList[0], 
 				CHIPSEntityIndex);
 		    if (!pPriv->ptr) {
-			pPriv->ptr = xnfcalloc(sizeof(CHIPSEntRec), 1);
+			pPriv->ptr = XNFcallocarray(sizeof(CHIPSEntRec), 1);
 			cPtrEnt = pPriv->ptr;
 			cPtrEnt->lastInstance = -1;
 		    } else {
@@ -1264,7 +1264,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = xnfcalloc(sizeof(ClockRange), 1);
+    clockRanges = XNFcallocarray(sizeof(ClockRange), 1);
     clockRanges->next = NULL;
     clockRanges->ClockMulFactor = cPtr->ClockMulFactor;
     clockRanges->minClock = cPtr->MinClock;
@@ -4095,7 +4095,7 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 	miBankInfoPtr pBankInfo;
 
 	/* Setup the vga banking variables */
-	pBankInfo = (miBankInfoPtr)xnfcalloc(sizeof(miBankInfoRec),1);
+	pBankInfo = (miBankInfoPtr)XNFcallocarray(sizeof(miBankInfoRec),1);
 	if (pBankInfo == NULL)
 	    return FALSE;
 	
