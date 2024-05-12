@@ -28,10 +28,6 @@
 
 #include "config.h"
 #include "ct_pcirename.h"
-#ifdef HAVE_XAA_H
-#include "xaa.h"
-#include "xaalocal.h"		/* XAA internals as we replace some of XAA */
-#endif
 #include "exa.h"
 #include "vbe.h"
 #include "xf86Cursor.h"
@@ -329,9 +325,6 @@ typedef struct _CHIPSRec {
     unsigned int *	Regs32;
     unsigned int	Flags;
     CARD32		Bus;
-#ifdef HAVE_XAA_H
-    XAAInfoRecPtr	AccelInfoRec;
-#endif
     ExaDriverPtr 	pExa;
     xf86CursorInfoPtr	CursorInfoRec;
     CHIPSACLRec		Accel;

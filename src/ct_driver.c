@@ -168,9 +168,6 @@ static ModeStatus CHIPSValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Internally used functions */
-#ifdef HAVE_ISA
-static int      chipsFindIsaDevice(GDevPtr dev);
-#endif
 static Bool     chipsClockSelect(ScrnInfoPtr pScrn, int no);
 Bool     chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void     chipsSave(ScrnInfoPtr pScrn, vgaRegPtr VgaSave,
@@ -583,27 +580,6 @@ static PciChipsets CHIPSPCIchipsets[] = {
     { -1,	     -1,	     RES_UNDEFINED}
 };
 
-#ifdef HAVE_ISA
-static IsaChipsets CHIPSISAchipsets[] = {
-    { CHIPS_CT65520,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65525,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65530,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65535,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65540,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65545,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65546,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65548,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65550,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65554,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT65555,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT68554,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT69000,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT69030,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT64200,		RES_EXCLUSIVE_VGA },
-    { CHIPS_CT64300,		RES_EXCLUSIVE_VGA },
-    { -1,			RES_UNDEFINED }
-};
-#endif
 
 /* The options supported by the Chips and Technologies Driver */
 typedef enum {
@@ -812,12 +788,6 @@ CHIPSAvailableOptions(int chipid, int busid)
 {
     int chip = chipid & 0x0000ffff;
 
-#ifdef HAVE_ISA
-    if (busid == BUS_ISA) {
-    	if ((chip == CHIPS_CT64200) || (chip == CHIPS_CT64300)) 
-	    return ChipsWingineOptions;
-    }
-#endif
     if (busid == BUS_PCI) {
     	if ((chip >= CHIPS_CT65550) && (chip <= CHIPS_CT69030))
 	    return ChipsHiQVOptions;
@@ -977,129 +947,12 @@ CHIPSProbe(DriverPtr drv, int flags)
 	}
     }
 
-#ifdef HAVE_ISA 
-    /* Isa Bus */
-    numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
-				    drv,chipsFindIsaDevice,devSections,
-				    numDevSections,&usedChips);
-    if (numUsed > 0) {
-	if (flags & PROBE_DETECT)
-	    foundScreen = TRUE;
-	else for (i = 0; i < numUsed; i++) {
-	    ScrnInfoPtr pScrn = NULL;
-	    if ((pScrn = xf86ConfigIsaEntity(pScrn,0,
-						   usedChips[i],
-						   CHIPSISAchipsets,NULL,
-						   NULL,NULL,NULL,NULL))) {
-		pScrn->driverVersion = CHIPS_VERSION;
-		pScrn->driverName    = CHIPS_DRIVER_NAME;
-		pScrn->name          = CHIPS_NAME;
-		pScrn->Probe         = CHIPSProbe;
-		pScrn->PreInit       = CHIPSPreInit;
-		pScrn->ScreenInit    = CHIPSScreenInit;
-		pScrn->SwitchMode    = CHIPSSwitchMode;
-		pScrn->AdjustFrame   = CHIPSAdjustFrame;
-		pScrn->EnterVT       = CHIPSEnterVT;
-		pScrn->LeaveVT       = CHIPSLeaveVT;
-		pScrn->FreeScreen    = CHIPSFreeScreen;
-		pScrn->ValidMode     = CHIPSValidMode;
-		foundScreen = TRUE;
-	    }
-	    free(usedChips);
-	}
-    }
-#endif
     
     free(devSections);
     return foundScreen;
 }
 #endif
 
-#ifdef HAVE_ISA
-static int
-chipsFindIsaDevice(GDevPtr dev)
-{
-    int found = -1;
-    unsigned char tmp;
-
-    /* 
-     * This function has the only direct register access in the C&T driver. 
-     * All other register access through functions to allow for full MMIO.
-     */
-    outb(0x3D6, 0x00);
-    tmp = inb(0x3D7);
-
-    switch (tmp & 0xF0) {
-    case 0x70: 		/* CT65520 */
-	found = CHIPS_CT65520; break;
-    case 0x80:		/* CT65525 or CT65530 */
-	found = CHIPS_CT65530; break;
-    case 0xA0:		/* CT64200 */
-	found = CHIPS_CT64200; break;
-    case 0xB0:		/* CT64300 */
-	found = CHIPS_CT64300; break;
-    case 0xC0:		/* CT65535 */
-	found = CHIPS_CT65535; break;
-    default:
-	switch (tmp & 0xF8) {
-	    case 0xD0:		/* CT65540 */
-		found = CHIPS_CT65540; break;
-	    case 0xD8:		/* CT65545 or CT65546 or CT65548 */
-		switch (tmp & 7) {
-		case 3:
-		    found = CHIPS_CT65546; break;
-		case 4:
-		    found = CHIPS_CT65548; break;
-		default:
-		    found = CHIPS_CT65545; break;
-
-		}
-		break;
-	    default:
-		if (tmp == 0x2C) {
-		    outb(0x3D6, 0x01);
-		    tmp = inb(0x3D7);
-		    if (tmp != 0x10) break;
-		    outb(0x3D6, 0x02);
-		    tmp = inb(0x3D7);
-		    switch (tmp) {
-		    case 0xE0:		/* CT65550 */
-			found = CHIPS_CT65550; break;
-		    case 0xE4:		/* CT65554 */
-			found = CHIPS_CT65554; break;
-		    case 0xE5:		/* CT65555 */
-			found = CHIPS_CT65555; break;
-		    case 0xF4:		/* CT68554 */
-			found = CHIPS_CT68554; break;
-		    case 0xC0:		/* CT69000 */
-			found = CHIPS_CT69000; break;
-		    case 0x30:		/* CT69030 */
-			outb(0x3D6, 0x03);
-			tmp = inb(0x3D7);
-			if (tmp == 0xC)
-			    found = CHIPS_CT69030;
-			break;
-		    default:
-			break;
-		    }
-		}
-		break;
-	}
-	break;
-    }
-    /* We only want ISA/VL Bus - so check for PCI Bus */
-    if(found > CHIPS_CT65548) {
-	outb(0x3D6, 0x08);
-	tmp = inb(0x3D7);
-	if(tmp & 0x01) found = -1; 
-    } else if(found > CHIPS_CT65535) {
-	outb(0x3D6, 0x01);
-	tmp = inb(0x3D7);
-	if ((tmp & 0x07) == 0x06) found = -1;
-    }
-    return found;
-}
-#endif
 
 /* Mandatory */
 Bool
@@ -1367,21 +1220,11 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     }
 
-#ifdef HAVE_XAA_H
-    if (cPtr->Flags & ChipsAccelSupport) {
-	if (!xf86LoadSubModule(pScrn, "xaa")) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Falling back to shadowfb\n");
-	    cPtr->Flags &= ~(ChipsAccelSupport);
-	    cPtr->Flags |= ChipsShadowFB;
-	}
-    }
-#else
     if (!xf86LoadSubModule(pScrn, "exa")) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Falling back to shadowfb\n");
 	cPtr->Flags &= ~(ChipsAccelSupport);
 	cPtr->Flags |= ChipsShadowFB;
     }
-#endif
 
     if (cPtr->Flags & ChipsShadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
@@ -1584,12 +1427,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
 
-#ifndef HAVE_ISA
     if (!(cPtr->Flags & ChipsLinearSupport)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Linear framebuffer required\n");
 	return FALSE;
     }
-#endif
 
     /* linear base */
     if (cPtr->Flags & ChipsLinearSupport) {
@@ -2639,12 +2480,10 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
 
-#ifndef HAVE_ISA
     if (!(cPtr->Flags & ChipsLinearSupport)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Linear framebuffer required\n");
 	return FALSE;
     }
-#endif
 
     /* linear base */
     if (useLinear) {
@@ -3104,12 +2943,10 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
     
-#ifndef HAVE_ISA
     if (!(cPtr->Flags & ChipsLinearSupport)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Linear framebuffer required\n");
 	return FALSE;
     }
-#endif
 
     /* linear base */
     if (useLinear) {
@@ -4305,23 +4142,11 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 	    xf86InitFBManager(pScreen, &AvailFBArea); 
 	}
 
-#ifdef HAVE_XAA_H
-	if (cPtr->Flags & ChipsAccelSupport) {
-	    if (IS_HiQV(cPtr)) {
-		CHIPSHiQVAccelInit(pScreen);
-	    } else if (cPtr->UseMMIO) {
-		CHIPSMMIOAccelInit(pScreen);
-	    } else {
-		CHIPSAccelInit(pScreen);
-	    }
-	}
-#else
 	if (cPtr->Flags & ChipsAccelSupport) {
 	    if (IS_HiQV(cPtr)) {
 		CHIPSInitEXA(pScreen);
 	    }
 	}
-#endif
 	
 	xf86SetBackingStore(pScreen);
 #ifdef ENABLE_SILKEN_MOUSE
@@ -4542,10 +4367,6 @@ CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL)
 	cPtrEnt = pPriv->ptr;
 	cPtrEnt->refCount--;
     }
-#ifdef HAVE_XAA_H
-    if (cPtr->AccelInfoRec)
-	XAADestroyInfoRec(cPtr->AccelInfoRec);
-#endif
     if (cPtr->CursorInfoRec)
 	xf86DestroyCursorInfoRec(cPtr->CursorInfoRec);
     free(cPtr->ShadowPtr);

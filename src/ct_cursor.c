@@ -45,20 +45,7 @@
 #include "ct_driver.h"
 
 /* Sync function, maybe this should check infoRec->NeedToSync before syncing */
-#ifdef HAVE_XAA_H
-#define CURSOR_SYNC(pScrn) \
-    if (IS_HiQV(cPtr)) { \
-	CHIPSHiQVSync(pScrn); \
-    } else { \
-	if(!cPtr->UseMMIO) { \
-	    CHIPSSync(pScrn); \
-	} else { \
-	    CHIPSMMIOSync(pScrn); \
-	} \
-    }
-#else
 #define CURSOR_SYNC(pScrn)
-#endif
 
 /* Swing your cursor bytes round and round... yeehaw! */
 #if X_BYTE_ORDER == X_BIG_ENDIAN

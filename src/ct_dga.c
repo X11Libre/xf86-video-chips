@@ -15,14 +15,6 @@ static Bool CHIPS_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
 static Bool CHIPS_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  CHIPS_GetViewport(ScrnInfoPtr);
 static void CHIPS_SetViewport(ScrnInfoPtr, int, int, int);
-#ifdef HAVE_XAA_H
-static void CHIPS_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
-static void CHIPS_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
-#if 0
-static void CHIPS_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
-					unsigned long);
-#endif
-#endif
 
 static
 DGAFunctionRec CHIPS_DGAFuncs = {
@@ -31,18 +23,7 @@ DGAFunctionRec CHIPS_DGAFuncs = {
    CHIPS_SetMode,
    CHIPS_SetViewport,
    CHIPS_GetViewport,
-#ifdef HAVE_XAA_H
-   CHIPSSync,
-   CHIPS_FillRect,
-   CHIPS_BlitRect,
-#if 0
-   CHIPS_BlitTransRect
-#else
-   NULL
-#endif
-#else
    NULL, NULL, NULL, NULL
-#endif
 };
 
 static
@@ -52,18 +33,7 @@ DGAFunctionRec CHIPS_MMIODGAFuncs = {
    CHIPS_SetMode,
    CHIPS_SetViewport,
    CHIPS_GetViewport,
-#ifdef HAVE_XAA_H
-   CHIPSMMIOSync,
-   CHIPS_FillRect,
-   CHIPS_BlitRect,
-#if 0
-   CHIPS_BlitTransRect
-#else
-   NULL
-#endif
-#else
    NULL, NULL, NULL, NULL
-#endif
 };
 
 static
@@ -73,18 +43,7 @@ DGAFunctionRec CHIPS_HiQVDGAFuncs = {
    CHIPS_SetMode,
    CHIPS_SetViewport,
    CHIPS_GetViewport,
-#ifdef HAVE_XAA_H
-   CHIPSHiQVSync,
-   CHIPS_FillRect,
-   CHIPS_BlitRect,
-#if 0
-   CHIPS_BlitTransRect
-#else
-   NULL
-#endif
-#else
    NULL, NULL, NULL, NULL
-#endif
 };
 
 
@@ -126,11 +85,6 @@ SECOND_PASS:
 
 	currentMode->mode = pMode;
 	currentMode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
-#ifdef HAVE_XAA_H
-	if(cPtr->Flags & ChipsAccelSupport)
-	   currentMode->flags |= (cPtr->Flags & ChipsAccelSupport) 
-	     ? (DGA_FILL_RECT | DGA_BLIT_RECT) : 0;
-#endif
 	if(pMode->Flags & V_DBLSCAN)
 	   currentMode->flags |= DGA_DOUBLESCAN;
 	if(pMode->Flags & V_INTERLACE)
@@ -260,57 +214,6 @@ CHIPS_SetViewport(
     cPtr->DGAViewportStatus = 0;  /* CHIPSAdjustFrame loops until finished */
 }
 
-#ifdef HAVE_XAA_H
-static void 
-CHIPS_FillRect (
-   ScrnInfoPtr pScrn, 
-   int x, int y, int w, int h, 
-   unsigned long color
-){
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-
-    if(cPtr->AccelInfoRec) {
-	(*cPtr->AccelInfoRec->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
-	(*cPtr->AccelInfoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
-	SET_SYNC_FLAG(cPtr->AccelInfoRec);
-    }
-}
-
-static void 
-CHIPS_BlitRect(
-   ScrnInfoPtr pScrn, 
-   int srcx, int srcy, 
-   int w, int h, 
-   int dstx, int dsty
-){
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-
-    if(cPtr->AccelInfoRec) {
-	int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
-	int ydir = (srcy < dsty) ? -1 : 1;
-
-	(*cPtr->AccelInfoRec->SetupForScreenToScreenCopy)(
-		pScrn, xdir, ydir, GXcopy, ~0, -1);
-	(*cPtr->AccelInfoRec->SubsequentScreenToScreenCopy)(
-		pScrn, srcx, srcy, dstx, dsty, w, h);
-	SET_SYNC_FLAG(cPtr->AccelInfoRec);
-    }
-}
-
-#if 0
-static void 
-CHIPS_BlitTransRect(
-   ScrnInfoPtr pScrn, 
-   int srcx, int srcy, 
-   int w, int h, 
-   int dstx, int dsty,
-   unsigned long color
-){
-  /* this one should be separate since the XAA function would
-     prohibit usage of ~0 as the key */
-}
-#endif
-#endif
 static Bool 
 CHIPS_OpenFramebuffer(
    ScrnInfoPtr pScrn, 
