@@ -83,23 +83,11 @@
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
-#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 6
-/* Standard resources are defined here */
-#include "xf86Resources.h"
-
-/* Needed by Resources Access Control (RAC) */
-#include "xf86RAC.h"
-#endif
-
 /* All drivers using the vgahw module need this */
 #include "vgaHW.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
-
-#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 6
-#define USE_MIBANK 1
-#endif
 
 /* All drivers using the mi banking wrapper need this */
 #ifdef USE_MIBANK
@@ -150,12 +138,12 @@ static Bool     CHIPSPciProbe(DriverPtr drv, int entity_num,
 static Bool     CHIPSProbe(DriverPtr drv, int flags);
 #endif
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool     CHIPSScreenInit(SCREEN_INIT_ARGS_DECL);
-static Bool     CHIPSEnterVT(VT_FUNC_ARGS_DECL);
-static void     CHIPSLeaveVT(VT_FUNC_ARGS_DECL);
-static Bool     CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL);
-static void     CHIPSFreeScreen(FREE_SCREEN_ARGS_DECL);
-static ModeStatus CHIPSValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
+static Bool     CHIPSScreenInit(ScreenPtr pScreen, int argc, char **argv);
+static Bool     CHIPSEnterVT(ScrnInfoPtr arg);
+static void     CHIPSLeaveVT(ScrnInfoPtr arg);
+static Bool     CHIPSCloseScreen(ScreenPtr pScreen);
+static void     CHIPSFreeScreen(ScrnInfoPtr arg);
+static ModeStatus CHIPSValidMode(ScrnInfoPtr arg, DisplayModePtr mode,
                                  Bool verbose, int flags);
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, int mode);
 
@@ -1296,11 +1284,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     vgaHWSetStdFuncs(hwp);
 #endif
     vgaHWGetIOBase(hwp);
-#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 12
-    cPtr->PIOBase = hwp->PIOOffset;
-#else
     cPtr->PIOBase = 0;
-#endif
 
     /*
      * Must allow ensure that storage for the 2nd set of vga registers is
@@ -1766,8 +1750,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	if (!ddc_done)
 	    if (xf86LoadSubModule(pScrn, "i2c")) {
 		if (chips_i2cInit(pScrn)) {
-		    if ((pMon = xf86PrintEDID(xf86DoEDID_DDC2(XF86_SCRN_ARG(pScrn),
-						      cPtr->I2C))) != NULL) {
+		    if ((pMon = xf86PrintEDID(xf86DoEDID_DDC2(pScrn, cPtr->I2C))) != NULL) {
 		       ddc_done = TRUE;
 		       xf86SetDDCproperties(pScrn,pMon);
 		    }
@@ -3504,9 +3487,9 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 
 /* Mandatory */
 static Bool
-CHIPSEnterVT(VT_FUNC_ARGS_DECL)
+CHIPSEnterVT(ScrnInfoPtr arg)
 {
-    SCRN_INFO_PTR(arg);
+    ScrnInfoPtr pScrn = arg;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSEntPtr cPtrEnt;
 
@@ -3526,16 +3509,16 @@ CHIPSEnterVT(VT_FUNC_ARGS_DECL)
     chipsHWCursorOn(cPtr, pScrn);
     /* cursor settle delay */
     usleep(50000);
-    CHIPSAdjustFrame(ADJUST_FRAME_ARGS(pScrn, pScrn->frameX0, pScrn->frameY0));
+    CHIPSAdjustFrame(pScrn, pScrn->frameX0, pScrn->frameY0);
     usleep(50000);
     return TRUE;
 }
 
 /* Mandatory */
 static void
-CHIPSLeaveVT(VT_FUNC_ARGS_DECL)
+CHIPSLeaveVT(ScrnInfoPtr arg)
 {
-    SCRN_INFO_PTR(arg);
+    ScrnInfoPtr pScrn = arg;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     CHIPSEntPtr cPtrEnt;
@@ -3681,7 +3664,7 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 
 /* Mandatory */
 static Bool
-CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
+CHIPSScreenInit(ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     vgaHWPtr hwp;
@@ -3773,7 +3756,7 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
     if (!chipsModeInit(pScrn,pScrn->currentMode))
 	return FALSE;
     CHIPSSaveScreen(pScreen,SCREEN_SAVER_ON);
-    CHIPSAdjustFrame(ADJUST_FRAME_ARGS(pScrn, pScrn->frameX0, pScrn->frameY0));
+    CHIPSAdjustFrame(pScrn, pScrn->frameX0, pScrn->frameY0);
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -4185,9 +4168,9 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 
 /* Mandatory */
 Bool
-CHIPSSwitchMode(SWITCH_MODE_ARGS_DECL)
+CHIPSSwitchMode(ScrnInfoPtr arg, DisplayModePtr mode)
 {
-    SCRN_INFO_PTR(arg);
+    ScrnInfoPtr pScrn = arg;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSEntPtr cPtrEnt;
 
@@ -4205,9 +4188,9 @@ CHIPSSwitchMode(SWITCH_MODE_ARGS_DECL)
 
 /* Mandatory */
 void
-CHIPSAdjustFrame(ADJUST_FRAME_ARGS_DECL)
+CHIPSAdjustFrame(ScrnInfoPtr arg, int x, int y)
 {
-    SCRN_INFO_PTR(arg);
+    ScrnInfoPtr pScrn = arg;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSEntPtr cPtrEnt;
 
@@ -4292,7 +4275,7 @@ CHIPSAdjustFrame(ADJUST_FRAME_ARGS_DECL)
 
 /* Mandatory */
 static Bool
-CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL)
+CHIPSCloseScreen(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -4330,14 +4313,14 @@ CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL)
 
     pScreen->CloseScreen = cPtr->CloseScreen; /*§§§*/
     xf86ClearPrimInitDone(pScrn->entityList[0]);
-    return (*pScreen->CloseScreen)(CLOSE_SCREEN_ARGS);/*§§§*/
+    return (*pScreen->CloseScreen)(pScreen);/*§§§*/
 }
 
 /* Optional */
 static void
-CHIPSFreeScreen(FREE_SCREEN_ARGS_DECL)
+CHIPSFreeScreen(ScrnInfoPtr arg)
 {
-    SCRN_INFO_PTR(arg);
+    ScrnInfoPtr pScrn = arg;
     if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
 	vgaHWFreeHWRec(pScrn);
     CHIPSFreeRec(pScrn);
@@ -4345,9 +4328,9 @@ CHIPSFreeScreen(FREE_SCREEN_ARGS_DECL)
 
 /* Optional */
 static ModeStatus
-CHIPSValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode, Bool verbose, int flags)
+CHIPSValidMode(ScrnInfoPtr arg, DisplayModePtr mode, Bool verbose, int flags)
 {
-    SCRN_INFO_PTR(arg);
+    ScrnInfoPtr pScrn = arg;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
     /* The tests here need to be expanded */
@@ -4386,9 +4369,6 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     if (!pScrn->vtSema)
 	return;
 
-#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 8
-    xf86EnableAccess(pScrn);
-#endif
     switch (PowerManagementMode) {
     case DPMSModeOn:
 	/* Screen: On; HSync: On, VSync: On */
@@ -7297,7 +7277,7 @@ chipsSetPanelType(CHIPSPtr cPtr)
 static void
 chipsBlockHandler (BLOCKHANDLER_ARGS_DECL)
 {
-    SCREEN_PTR(arg);
+    ScreenPtr pScreen = arg;
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr    cPtr = CHIPSPTR(pScrn);
 
