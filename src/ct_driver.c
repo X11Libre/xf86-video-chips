@@ -572,7 +572,6 @@ static PciChipsets CHIPSPCIchipsets[] = {
     { -1,	     -1,	     RES_UNDEFINED}
 };
 
-
 /* The options supported by the Chips and Technologies Driver */
 typedef enum {
     OPTION_LINEAR,
@@ -939,12 +938,10 @@ CHIPSProbe(DriverPtr drv, int flags)
 	}
     }
 
-
     free(devSections);
     return foundScreen;
 }
 #endif
-
 
 /* Mandatory */
 Bool

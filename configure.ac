@@ -76,7 +76,6 @@ if test "x$XSERVER_LIBPCIACCESS" = xyes; then
 fi
 AM_CONDITIONAL(XSERVER_LIBPCIACCESS, test "x$XSERVER_LIBPCIACCESS" = xyes)
 
-
 # Checks for functions (often defined as inlines in compiler.h)
 AC_MSG_CHECKING([for inb])
 AC_LINK_IFELSE([AC_LANG_SOURCE([
