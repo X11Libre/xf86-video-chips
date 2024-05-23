@@ -4007,7 +4007,7 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
     } else
-#endif /* HAVE_ISA */
+#endif /* USE_MIBANK */
     {
     /* !!! Only support linear addressing for now. This might change */
 	/* Setup pointers to free space in video ram */
