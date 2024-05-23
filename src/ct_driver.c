@@ -112,14 +112,6 @@
 #include "fb.h"
 #include "fboverlay.h"
 
-/* Needed for the 1 and 4 bpp framebuffers */
-#ifdef HAVE_XF1BPP
-#include "xf1bpp.h"
-#endif
-#ifdef HAVE_XF4BPP
-#include "xf4bpp.h"
-#endif
-
 /* int10 */
 #include "xf86int10.h"
 #include "vbe.h"
@@ -1190,26 +1182,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
-#ifdef HAVE_XF1BPP
-    case 1:
-	if (xf86LoadSubModule(pScrn, "xf1bpp") == NULL) {
-	    vbeFree(cPtr->pVbe);
-	    cPtr->pVbe = NULL;
-	    CHIPSFreeRec(pScrn);
-	    return FALSE;
-	}	
-	break;
-#endif
-#ifdef HAVE_XF4BPP
-    case 4:
-	if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
-	    vbeFree(cPtr->pVbe);
-	    cPtr->pVbe = NULL;
-	    CHIPSFreeRec(pScrn);
-	    return FALSE;
-	}	
-	break;
-#endif
     default:
 	if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	    vbeFree(cPtr->pVbe);
@@ -3854,22 +3826,6 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
     }
 
     switch (pScrn->bitsPerPixel) {
-#ifdef HAVE_XF1BPP
-    case 1:
-	ret = xf1bppScreenInit(pScreen, FBStart,
- 		        width,height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
-#endif
-#ifdef HAVE_XF4BPP
-    case 4:
-	ret = xf4bppScreenInit(pScreen, FBStart,
- 		        width,height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
-#endif
     case 16:
     default:
 	ret = fbScreenInit(pScreen, FBStart,
