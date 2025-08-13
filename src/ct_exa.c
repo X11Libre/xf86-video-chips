@@ -1,5 +1,5 @@
 /*
- * EXA acceleration for now ct65550 only, for lack of other hardware 
+ * EXA acceleration for now ct65550 only, for lack of other hardware
  *
  * Copyright (C) 2016 Michael Lorenz
  *
@@ -296,9 +296,9 @@ CHIPSInitEXA(ScreenPtr pScreen)
 
     /*
      * Contrary to the manual, the blitter needs 8 byte pitch alignment or it
-     * will lock up. Probably shouldn't be surprised, there are hidden 64bit 
+     * will lock up. Probably shouldn't be surprised, there are hidden 64bit
      * alignment requirements all over the place.
-     */ 
+     */
     pExa->pixmapOffsetAlign = 8;
     pExa->pixmapPitchAlign = 8;
 

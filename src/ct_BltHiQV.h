@@ -46,14 +46,14 @@
 #define ctQWORDALIGN            0x5000000L
 /* This shouldn't be used because not all chip rev's
  * have BR09 and BR0A, and I haven't even defined
- * macros to write to these registers 
+ * macros to write to these registers
  */
 #define ctEXPCOLSEL             0x8000000L
 
 /* Macros to do useful things with the C&T BitBLT engine */
 
-/* For some odd reason the blitter busy bit occasionly "locks up" when 
- * it gets polled to fast. However I have observed this behavior only 
+/* For some odd reason the blitter busy bit occasionly "locks up" when
+ * it gets polled to fast. However I have observed this behavior only
  * when doing ScreenToScreenColorExpandFill on a 65550. This operation
  * was broken anyway (the source offset register is not observed) therefore
  * no action was taken.

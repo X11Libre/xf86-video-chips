@@ -2,24 +2,24 @@
 /*
  * Copyright 1994  The XFree86 Project
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
- * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
- * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * Hardware Cursor for Trident utilizing XAA Cursor code.
  * Written by Alan Hourihane <alanh@fairlite.demon.co.uk>
  * Modified for Chips and Technologies by David Bateman <dbateman@eng.uts.edu.au>
@@ -34,7 +34,7 @@
 #include "xf86_OSproc.h"
 
 /* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"   
+#include "compiler.h"
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
@@ -68,13 +68,13 @@ CHIPSShowCursor(ScrnInfoPtr pScrn)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     unsigned char tmp;
 
-    CURSOR_SYNC(pScrn); 
-    
+    CURSOR_SYNC(pScrn);
+
     /* turn the cursor on */
     if (IS_HiQV(cPtr)) {
 	tmp = cPtr->readXR(cPtr, 0xA0);
 	cPtr->writeXR(cPtr, 0xA0, (tmp & 0xF8) | 5);
-	if (cPtr->UseDualChannel && 
+	if (cPtr->UseDualChannel &&
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -106,14 +106,14 @@ CHIPSHideCursor(ScrnInfoPtr pScrn)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     unsigned char tmp;
-  
+
     CURSOR_SYNC(pScrn);
 
     /* turn the cursor off */
     if (IS_HiQV(cPtr)) {
 	tmp = cPtr->readXR(cPtr, 0xA0);
 	cPtr->writeXR(cPtr, 0xA0, tmp & 0xF8);
-	if (cPtr->UseDualChannel && 
+	if (cPtr->UseDualChannel &&
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -144,9 +144,9 @@ static void
 CHIPSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    
+
     CURSOR_SYNC(pScrn);
-    
+
     if (x < 0)
 	x = ~(x-1) | 0x8000;
     if (y < 0)
@@ -158,7 +158,7 @@ CHIPSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	cPtr->writeXR(cPtr, 0xA5, (x >> 8) & 0x87);
 	cPtr->writeXR(cPtr, 0xA6, y & 0xFF);
 	cPtr->writeXR(cPtr, 0xA7, (y >> 8) & 0x87);
-	if (cPtr->UseDualChannel && 
+	if (cPtr->UseDualChannel &&
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -195,7 +195,7 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CARD32 packedcolfg, packedcolbg;
-    
+
     CURSOR_SYNC(pScrn);
 
     if (IS_HiQV(cPtr)) {
@@ -207,7 +207,7 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 
 	/* Write the new colours to the extended VGA palette. Palette
 	 * index is incremented after each write, so only write index
-	 * once 
+	 * once
 	 */
 	hwp->writeDacWriteAddr(hwp, 0x04);
 	if (xr80 & 0x80) {
@@ -230,7 +230,7 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 	/* Enable normal palette addressing */
 	cPtr->writeXR(cPtr, 0x80, xr80);
 
-	if (cPtr->UseDualChannel && 
+	if (cPtr->UseDualChannel &&
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -245,7 +245,7 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 
 	    /* Write the new colours to the extended VGA palette. Palette
 	     * index is incremented after each write, so only write index
-	     * once 
+	     * once
 	     */
 	    hwp->writeDacWriteAddr(hwp, 0x04);
 	    if (xr80 & 0x80) {
@@ -300,17 +300,17 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
     int y;
 #endif
 
-    CURSOR_SYNC(pScrn); 
+    CURSOR_SYNC(pScrn);
 
     if (cPtr->cursorDelay) {
 	usleep(200000);
 	cPtr->cursorDelay = FALSE;
     }
-    
+
     if (IS_Wingine(cPtr)) {
 	int i;
 	CARD32 *tmp = (CARD32 *)src;
-	
+
 	outl(cPtr->PIOBase+DR(0x8),0x20);
 	for (i=0; i<64; i++) {
 	    outl(cPtr->PIOBase+DR(0xC),*(CARD32 *)tmp);
@@ -325,7 +325,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
     	        case 3:
 #if 1
 		    memcpy((unsigned char *)cPtr->FbBase + cAcl->CursorAddress,
-			   src, cPtr->CursorInfoRec->MaxWidth * 
+			   src, cPtr->CursorInfoRec->MaxWidth *
 			   cPtr->CursorInfoRec->MaxHeight / 4);
 #else
         	    for (y = 0; y < 64; y++) {
@@ -362,7 +362,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
             }
 #else
 	    memcpy((unsigned char *)cPtr->FbBase + cAcl->CursorAddress,
-			src, cPtr->CursorInfoRec->MaxWidth * 
+			src, cPtr->CursorInfoRec->MaxWidth *
 			cPtr->CursorInfoRec->MaxHeight / 4);
 #endif
 	} else {
@@ -372,7 +372,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	     */
 	    if (IS_HiQV(cPtr))
 		if (pScrn->bitsPerPixel < 8)
-		    CHIPSHiQVSetReadWritePlanar(pScrn->pScreen, 
+		    CHIPSHiQVSetReadWritePlanar(pScrn->pScreen,
 					    (int)(cAcl->CursorAddress >> 16));
 		else
 		    CHIPSHiQVSetReadWrite(pScrn->pScreen,
@@ -385,7 +385,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 		    CHIPSSetWrite(pScrn->pScreen,
 					    (int)(cAcl->CursorAddress >> 16));
 	    memcpy((unsigned char *)cPtr->FbBase + (cAcl->CursorAddress &
-			0xFFFF), src,  cPtr->CursorInfoRec->MaxWidth * 
+			0xFFFF), src,  cPtr->CursorInfoRec->MaxWidth *
 			cPtr->CursorInfoRec->MaxHeight / 4);
 	}
     }
@@ -394,7 +394,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
     if (IS_HiQV(cPtr)) {
 	cPtr->writeXR(cPtr, 0xA2, (cAcl->CursorAddress >> 8) & 0xFF);
 	cPtr->writeXR(cPtr, 0xA3, (cAcl->CursorAddress >> 16) & 0x3F);
-	if (cPtr->UseDualChannel && 
+	if (cPtr->UseDualChannel &&
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -424,7 +424,7 @@ CHIPSUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    
+
     return (((cPtr->Flags & ChipsHWCursor) != 0)
 	    && !(pScrn->currentMode->Flags & V_DBLSCAN));
 }
@@ -456,7 +456,7 @@ CHIPSCursorInit(ScreenPtr pScreen)
     } else if (IS_Wingine(cPtr)) {
 	infoPtr->Flags |= HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
 	infoPtr->MaxHeight = 32;
-	infoPtr->MaxWidth = 32;      
+	infoPtr->MaxWidth = 32;
     } else {
 	infoPtr->Flags |= HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_8;
 	infoPtr->MaxHeight = 32;

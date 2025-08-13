@@ -27,7 +27,7 @@ int main(int argc, char** argv)
         printf("             = Z|z write vv to MSR\n");
         printf("     xx is in hexadecimal\n");
 	printf("     vv is in hexadecimal or '?' for query\n");
-    }    
+    }
 
     SET_IOPL();
 
@@ -98,11 +98,11 @@ int main(int argc, char** argv)
 	    value = (value << 4) | (c - 'A'+10);  /*ASCII assumed*/
 	    else if(c >= 'a' && c < 'g')
 	    value = (value << 4) | (c - 'a'+10);  /*ASCII assumed*/
-	}		
+	}
 	if ((cport != 'Z') && (cport != 'Y')) outb(port,value&0xFF);
 	if (query) {
-	    if ((cport != 'Z') && (cport != 'Y')) 
-		printf("%cR%X: 0x%X\n", cport, value & 0xFF, 
+	    if ((cport != 'Z') && (cport != 'Y'))
+		printf("%cR%X: 0x%X\n", cport, value & 0xFF,
 		   inb(port+1)&0xFF);
 	    else
 	        if (cport == 'Z')
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
 		    printf("FCR: 0x%X\n", inb(port1)&0xFF);
 	} else {
 	    if ((cport != 'Z') && (cport != 'Y')) {
-		printf("%cR%X: 0x%X -> 0x%X\n", cport, value & 0xFF, 
+		printf("%cR%X: 0x%X -> 0x%X\n", cport, value & 0xFF,
 		   inb(port+1)&0xFF, (value&0xFF00)>>8);
 		outw(port, value);
 		outb(port, index &0xFF);

@@ -79,7 +79,7 @@ static int compute_clock (
      they should be set to 0 on the 65548, and left untouched on
      earlier chips.  */
 
-  for (PSNx = ((ChipType == CT69000) || (ChipType == CT69030)) ? 1 : 0; 
+  for (PSNx = ((ChipType == CT69000) || (ChipType == CT69030)) ? 1 : 0;
        PSNx <= 1; PSNx++) {
     unsigned int low_N, high_N;
     double Fref4PSN;
@@ -89,7 +89,7 @@ static int compute_clock (
     low_N = 3;
     high_N = ClkMaxN;
 
-    while (Fref / (PSN * low_N) > (((ChipType == CT69000) || 
+    while (Fref / (PSN * low_N) > (((ChipType == CT69000) ||
 				    (ChipType == CT69030)) ? 5.0e6 : 2.0e6))
       low_N++;
     while (Fref / (PSN * high_N) < 150.0e3)
@@ -210,7 +210,7 @@ static int set_clock(
     outb(0x3D6, 0x33);
     tmp = inb(0x3D7);
     if (IS_MemClk(ClockType)) {
-      outb(0x3D7, tmp | 0x20);     
+      outb(0x3D7, tmp | 0x20);
     } else {
       outb(0x3D7, tmp & ~0x20);
     }
@@ -295,13 +295,13 @@ static unsigned int probe_chip(void) {
       if (temp == 0x0C) ChipType = CT69030;
     }
   }
- 
+
   RESET_IOPL();
 
   if (ChipType == 0) {      /* failure */
     fprintf(stderr, "Not a Chips and Technologies Chipset\n");
   }
-  
+
   return ChipType;
 }
 
@@ -339,7 +339,7 @@ int main (int argc, char *argv[]) {
     fprintf(stderr, "No programmable Clock!\n");
     return 1;
   }
-  
+
   if (IS_HiQV(ChipType)) {
     if (! compute_clock(ChipType, target, Fref, 63, 127, &M, &N, &P, &PSN)) {
       return set_clock(ChipType, ClockType, progclock, M, N, P, PSN);

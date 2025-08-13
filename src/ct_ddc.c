@@ -24,7 +24,7 @@ chips_ddc1Read(ScrnInfoPtr pScrn)
     unsigned char ddc_mask = ((CHIPSPtr)pScrn->driverPrivate)->ddc_mask;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    
+
     register unsigned int tmp;
 
     while ((hwp->readST01(hwp)) & 0x08){};
@@ -46,9 +46,9 @@ chips_ddc1(ScrnInfoPtr pScrn)
     unsigned char mask_c = 0x00;
     unsigned char val, tmp_val = 0;
     int i;
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);    
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Probing for DDC1\n");	
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Probing for DDC1\n");
 
     FR0C = cPtr->readFR(cPtr, 0x0C);
     XR62 = cPtr->readXR(cPtr, 0x62);
@@ -57,7 +57,7 @@ chips_ddc1(ScrnInfoPtr pScrn)
 	cPtr->ddc_mask = 0x1F;         /* GPIO 0-4 */
 	FR0B = cPtr->readFR(cPtr, 0x0B);
 	if (!(FR0B & 0x10))      /* GPIO 2 is used as 32 kHz input */
-	    cPtr->ddc_mask &= 0xFB;      
+	    cPtr->ddc_mask &= 0xFB;
 	if (cPtr->Bus == ChipsVLB) /* GPIO 3-7 are used as address bits */
 	    cPtr->ddc_mask &= 0x07;
 	break;
@@ -96,7 +96,7 @@ chips_ddc1(ScrnInfoPtr pScrn)
     }
     cPtr->ddc_mask = val ^ tmp_val;
     if (cPtr->ddc_mask)
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "DDC1 found\n");	
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "DDC1 found\n");
     else return;
 
     xf86PrintEDID(xf86DoEDID_DDC1(XF86_SCRN_ARG(pScrn), chips_ddc1SetSpeed,
@@ -108,9 +108,9 @@ chips_ddc1(ScrnInfoPtr pScrn)
 }
 
 static void
-chips_I2CGetBits(I2CBusPtr b, int *clock, int *data) 
+chips_I2CGetBits(I2CBusPtr b, int *clock, int *data)
 {
-    CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);  
+    CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);
     unsigned char FR0C, XR62, val;
 
     FR0C = pI2C_c->cPtr->readFR(pI2C_c->cPtr, 0x0C);
@@ -130,7 +130,7 @@ chips_I2CGetBits(I2CBusPtr b, int *clock, int *data)
 static void
 chips_I2CPutBits(I2CBusPtr b, int clock, int data)
 {
-    CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);  
+    CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);
     unsigned char FR0C, XR62, val;
 
     FR0C = pI2C_c->cPtr->readFR(pI2C_c->cPtr, 0x0C);
@@ -175,10 +175,10 @@ chips_i2cInit(ScrnInfoPtr pScrn)
     I2CPtr->I2CGetBits = chips_I2CGetBits;
     I2CPtr->DriverPrivate.ptr = malloc(sizeof(CHIPSI2CRec));
     ((CHIPSI2CPtr)(I2CPtr->DriverPrivate.ptr))->cPtr = cPtr;
-    
+
     if (!xf86I2CBusInit(I2CPtr))
 	return FALSE;
-    
+
     if (!chips_setI2CBits(I2CPtr, pScrn))
 	return FALSE;
 
@@ -188,8 +188,8 @@ chips_i2cInit(ScrnInfoPtr pScrn)
 static Bool
 chips_setI2CBits(I2CBusPtr b, ScrnInfoPtr pScrn)
 {
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);    
-    CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);  
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);
     unsigned char FR0B, FR0C;
     unsigned char bits, data_bits, clock_bits;
     int i,j;
@@ -200,7 +200,7 @@ chips_setI2CBits(I2CBusPtr b, ScrnInfoPtr pScrn)
 	bits = 0x1F;         /* GPIO 0-4 */
 	FR0B = cPtr->readFR(cPtr, 0x0B);
 	if (!(FR0B & 0x10))      /* GPIO 2 is used as 32 kHz input */
-	    bits &= 0xFB;      
+	    bits &= 0xFB;
 	pI2C_c->i2cDataBit = 0x01;
 	pI2C_c->i2cClockBit = 0x02;
 	if (cPtr->Bus == ChipsVLB) /* GPIO 3-7 are used as address bits */
@@ -257,7 +257,7 @@ chips_setI2CBits(I2CBusPtr b, ScrnInfoPtr pScrn)
 	data_bits >>= 1;
 	pI2C_c->i2cDataBit <<= 1;
     }
-    /* 
+    /*
      * We haven't found a valid clock/data line combination - that
      * doesn't mean there aren't any. We just haven't received an
      * answer from the relevant DDC I2C addresses. We'll have to wait
