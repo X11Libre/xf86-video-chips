@@ -192,7 +192,7 @@ typedef struct {
 
 /* Some variables needed in the XAA acceleration */
 typedef struct {
-    /* General variable */ 
+    /* General variable */
     unsigned int CommandFlags;
     unsigned int BytesPerPixel;
     unsigned int BitsPerPixel;
@@ -294,7 +294,7 @@ typedef struct _CHIPSRec {
     int                 Rotate;
     void		(*PointerMoved)(SCRN_ARG_TYPE arg, int x, int y);
     int                 FbOffset16;
-    int                 FbSize16;  
+    int                 FbSize16;
     OptionInfoPtr	Options;
     CHIPSPanelSizeRec	PanelSize;
     int			FrameBufferSize;
@@ -555,11 +555,11 @@ void     chipsPointerMoved(SCRN_ARG_TYPE arg, int x, int y);
 /* To aid debugging of 32 bit register access we make the following defines */
 /*
 #define DEBUG
-#define CT_HW_DEBUG 
+#define CT_HW_DEBUG
 */
 #if defined(DEBUG) & defined(CT_HW_DEBUG)
 #define HW_DEBUG(x) {usleep(500000); ErrorF("Register/Address: 0x%X\n",x);}
 #else
-#define HW_DEBUG(x) 
+#define HW_DEBUG(x)
 #endif
 #endif

@@ -31,11 +31,11 @@ static int CHIPSSetPortAttribute(ScrnInfoPtr, Atom, INT32, pointer);
 static int CHIPSGetPortAttribute(ScrnInfoPtr, Atom ,INT32 *, pointer);
 static void CHIPSQueryBestSize(ScrnInfoPtr, Bool,
 	short, short, short, short, unsigned int *, unsigned int *, pointer);
-static int CHIPSPutImage( ScrnInfoPtr, 
+static int CHIPSPutImage( ScrnInfoPtr,
 	short, short, short, short, short, short, short, short,
 	int, unsigned char*, short, short, Bool, RegionPtr, pointer,
 	DrawablePtr);
-static int CHIPSQueryImageAttributes(ScrnInfoPtr, 
+static int CHIPSQueryImageAttributes(ScrnInfoPtr,
 	int, unsigned short *, unsigned short *,  int *, int *);
 static void CHIPSVideoTimerCallback(ScrnInfoPtr pScrn, Time time);
 
@@ -44,7 +44,7 @@ static void CHIPSVideoTimerCallback(ScrnInfoPtr pScrn, Time time);
 
 static Atom xvColorKey;
 
-void 
+void
 CHIPSInitVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
@@ -52,7 +52,7 @@ CHIPSInitVideo(ScreenPtr pScreen)
     XF86VideoAdaptorPtr newAdaptor = NULL;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     int num_adaptors;
-	
+
     if ((cPtr->Flags & ChipsVideoSupport)) {
 	newAdaptor = CHIPSSetupImageVideo(pScreen);
 	CHIPSInitOffscreenImages(pScreen);
@@ -68,7 +68,7 @@ CHIPSInitVideo(ScreenPtr pScreen)
 	    newAdaptors =  /* need to free this someplace */
 		malloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
 	    if(newAdaptors) {
-		memcpy(newAdaptors, adaptors, num_adaptors * 
+		memcpy(newAdaptors, adaptors, num_adaptors *
 					sizeof(XF86VideoAdaptorPtr));
 		newAdaptors[num_adaptors] = newAdaptor;
 		adaptors = newAdaptors;
@@ -84,7 +84,7 @@ CHIPSInitVideo(ScreenPtr pScreen)
 }
 
 /* client libraries expect an encoding */
-static 
+static
 XF86VideoEncodingRec DummyEncoding[1] =
 {
  {
@@ -97,7 +97,7 @@ XF86VideoEncodingRec DummyEncoding[1] =
 
 #define NUM_FORMATS 4
 
-static XF86VideoFormatRec Formats[NUM_FORMATS] = 
+static XF86VideoFormatRec Formats[NUM_FORMATS] =
 {
   {8, PseudoColor},  {15, TrueColor}, {16, TrueColor}, {24, TrueColor}
 };
@@ -167,8 +167,8 @@ typedef struct {
 #define GET_PORT_PRIVATE(pScrn) \
    (CHIPSPortPrivPtr)((CHIPSPTR(pScrn))->adaptor->pPortPrivates[0].ptr)
 
-void 
-CHIPSResetVideo(ScrnInfoPtr pScrn) 
+void
+CHIPSResetVideo(ScrnInfoPtr pScrn)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSPortPrivPtr pPriv = cPtr->adaptor->pPortPrivates[0].ptr;
@@ -216,12 +216,12 @@ CHIPSResetVideo(ScrnInfoPtr pScrn)
 	    cPtr->writeMR(cPtr, 0x41, 0x00);
 	    cPtr->writeMR(cPtr, 0x42, 0x00);
 	    break;
-	}    
-    }    
+	}
+    }
 }
 
 
-static XF86VideoAdaptorPtr 
+static XF86VideoAdaptorPtr
 CHIPSSetupImageVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
@@ -278,14 +278,14 @@ CHIPSSetupImageVideo(ScreenPtr pScreen)
 }
 
 
-static void 
+static void
 CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shadow)
 {
   CHIPSPortPrivPtr pPriv = (CHIPSPortPrivPtr)data;
   CHIPSPtr cPtr = CHIPSPTR(pScrn);
   unsigned char mr3c, tmp;
 
-  REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
+  REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
   if(shadow) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	mr3c = cPtr->readMR(cPtr, 0x3C);
@@ -301,17 +301,17 @@ CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shadow)
   } else {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	pPriv->videoStatus |= OFF_TIMER;
-	pPriv->offTime = currentTime.milliseconds + OFF_DELAY; 
+	pPriv->offTime = currentTime.milliseconds + OFF_DELAY;
 	cPtr->VideoTimerCallback = CHIPSVideoTimerCallback;
      }
   }
 }
 
-static int 
+static int
 CHIPSSetPortAttribute(
-  ScrnInfoPtr pScrn, 
+  ScrnInfoPtr pScrn,
   Atom attribute,
-  INT32 value, 
+  INT32 value,
   pointer data
 ){
   CHIPSPortPrivPtr pPriv = (CHIPSPortPrivPtr)data;
@@ -346,19 +346,19 @@ CHIPSSetPortAttribute(
 		cPtr->writeMR(cPtr, 0x3E, green);
 		cPtr->writeMR(cPtr, 0x3F, blue);
 		break;
-	    }    
-	}    
-	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
+	    }
+	}
+	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
   } else return BadMatch;
 
   return Success;
 }
 
-static int 
+static int
 CHIPSGetPortAttribute(
-  ScrnInfoPtr pScrn, 
+  ScrnInfoPtr pScrn,
   Atom attribute,
-  INT32 *value, 
+  INT32 *value,
   pointer data
 ){
   CHIPSPortPrivPtr pPriv = (CHIPSPortPrivPtr)data;
@@ -370,17 +370,17 @@ CHIPSGetPortAttribute(
   return Success;
 }
 
-static void 
+static void
 CHIPSQueryBestSize(
-  ScrnInfoPtr pScrn, 
+  ScrnInfoPtr pScrn,
   Bool motion,
-  short vid_w, short vid_h, 
-  short drw_w, short drw_h, 
-  unsigned int *p_w, unsigned int *p_h, 
+  short vid_w, short vid_h,
+  short drw_w, short drw_h,
+  unsigned int *p_w, unsigned int *p_h,
   pointer data
 ){
   *p_w = drw_w;
-  *p_h = drw_h; 
+  *p_h = drw_h;
 
   if(*p_w > 16384) *p_w = 16384;
 }
@@ -445,9 +445,9 @@ CHIPSAllocateMemory(
    FBLinearPtr new_linear;
 
    if(linear) {
-	if(linear->size >= size) 
+	if(linear->size >= size)
 	   return linear;
-        
+
         if(xf86ResizeOffscreenLinear(linear, size))
 	   return linear;
 
@@ -456,30 +456,30 @@ CHIPSAllocateMemory(
 
    pScreen = xf86ScrnToScreen(pScrn);
 
-   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8, 
+   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8,
    						NULL, NULL, NULL);
 
    if(!new_linear) {
 	int max_size;
 
-	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 8, 
+	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 8,
 						PRIORITY_EXTREME);
-	
+
 	if(max_size < size)
 	   return NULL;
 
 	xf86PurgeUnlockedOffscreenAreas(pScreen);
-	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8, 
+	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8,
 						NULL, NULL, NULL);
    }
-   
+
    return new_linear;
 }
 
 static int
 CHIPSSetCurrentPlaybackBuffer(CHIPSPtr cPtr, int n)
 {
-  
+
     CARD8 mr20;
     mr20 = cPtr->readMR(cPtr, 0x20);
     mr20 &= ~0x1B;
@@ -493,11 +493,11 @@ CHIPSWaitGetNextFrame(CHIPSPtr cPtr)
 {
     volatile CARD8 mr20;
     volatile CARD8 mr21;
-    
+
     mr20 = cPtr->readMR(cPtr, 0x20);
     while (1) {
       mr21 = cPtr->readMR(cPtr, 0x21);
-      if (!(mr20 & (1 << 5)) || !(mr21 & 1))  
+      if (!(mr20 & (1 << 5)) || !(mr21 & 1))
 	break;
     }
     mr20 &= ~0x4;
@@ -511,7 +511,7 @@ CHIPSDisplayVideo(
     int id,
     int offset,
     short width, short height,
-    int pitch, 
+    int pitch,
     int x1, int y1, int x2, int y2,
     BoxPtr dstBox,
     short src_w, short src_h,
@@ -525,14 +525,14 @@ CHIPSDisplayVideo(
     int buffer = pPriv->currentBuffer;
     Bool dblscan = (pScrn->currentMode->Flags & V_DBLSCAN) == V_DBLSCAN;
     int val;
-    
+
 
     tmp = cPtr->readXR(cPtr, 0xD0);
     cPtr->writeXR(cPtr, 0xD0, (tmp | 0x10));
-    
+
     m1e = cPtr->readMR(cPtr, 0x1E);
     m1e &= 0xE0;		/* Set Zoom and Direction */
-    if ((!(cPtr->PanelType & ChipsLCD)) && (mode->Flags & V_INTERLACE)) 
+    if ((!(cPtr->PanelType & ChipsLCD)) && (mode->Flags & V_INTERLACE))
 	m1e |= 0x10;
 
     m1f = cPtr->readMR(cPtr, 0x1F);
@@ -546,13 +546,13 @@ CHIPSDisplayVideo(
 	break;
     case FOURCC_YV12:		/* YV12 */
       /* m1f |= 0x03 */
-	m1f |= 0x00; 
+	m1f |= 0x00;
 	break;
     case FOURCC_YUY2:		/* YUY2 */
     default:
 	m1f |= 0x00;		/* Do nothing here */
 	break;
-    }  
+    }
 
     offset += (x1 >> 15) & ~0x01;
     /* Setup Pointer 1 */
@@ -561,7 +561,7 @@ CHIPSDisplayVideo(
 	cPtr->writeMR(cPtr, 0x23, ((offset >> 8) & 0xFF));
 	cPtr->writeMR(cPtr, 0x24, ((offset >> 16) & 0xFF));
     }
-    
+
     /* Setup Pointer 2 */
     if ((buffer && !pPriv->manualDoubleBuffer) || !pPriv->doubleBuffer) {
         cPtr->writeMR(cPtr, 0x25, (offset & 0xF8));
@@ -577,11 +577,11 @@ CHIPSDisplayVideo(
     tmp = cPtr->readMR(cPtr, 0x20);
     tmp &= 0xC3;
 
-    if (pPriv->doubleBuffer && !pPriv->manualDoubleBuffer && triggerBufSwitch) 
+    if (pPriv->doubleBuffer && !pPriv->manualDoubleBuffer && triggerBufSwitch)
 	tmp |= ((1 << 2  | 1 << 5) | ((buffer) ? (1 << 4) : 0));
     cPtr->writeMR(cPtr, 0x20, tmp);
 
-    cPtr->writeMR(cPtr, 0x28, ((width >> 2) - 1)); /* Width */ 
+    cPtr->writeMR(cPtr, 0x28, ((width >> 2) - 1)); /* Width */
     cPtr->writeMR(cPtr, 0x34, ((width >> 2) - 1));
 
     /* Left Edge of Overlay */
@@ -590,7 +590,7 @@ CHIPSDisplayVideo(
     tmp = (tmp & 0xF8) + (((cPtr->OverlaySkewX + dstBox->x1) >> 8) & 0x07);
     cPtr->writeMR(cPtr, 0x2B, tmp);
     /* Right Edge of Overlay */
-    cPtr->writeMR(cPtr, 0x2C, ((cPtr->OverlaySkewX + dstBox->x2 -1) 
+    cPtr->writeMR(cPtr, 0x2C, ((cPtr->OverlaySkewX + dstBox->x2 -1)
 				& 0xFF));
     tmp = cPtr->readMR(cPtr, 0x2D);
     tmp = (tmp & 0xF8) + (((cPtr->OverlaySkewX + dstBox->x2 - 1) >> 8) & 0x07);
@@ -620,28 +620,28 @@ CHIPSDisplayVideo(
     if (drw_h > src_h || dblscan) {
         m1f = m1f | 0x80; /* set V-interpolation */
 	m1e = m1e | 0x08;
-	if (dblscan) 
+	if (dblscan)
 	    tmp = cPtr->VideoZoomMax >> 1;
 	if (drw_h > src_h)
            tmp = 256 * src_h / drw_h;
        cPtr->writeMR(cPtr, 0x33, tmp & 0xFC);
     }
-    cPtr->writeMR(cPtr, 0x1F, m1f); 
+    cPtr->writeMR(cPtr, 0x1F, m1f);
     cPtr->writeMR(cPtr, 0x1E, m1e);
 
     tmp = cPtr->readMR(cPtr, 0x3C);
     cPtr->writeMR(cPtr, 0x3C, (tmp | 0x7));
 }
 
-static int 
-CHIPSPutImage( 
-  ScrnInfoPtr pScrn, 
-  short src_x, short src_y, 
+static int
+CHIPSPutImage(
+  ScrnInfoPtr pScrn,
+  short src_x, short src_y,
   short drw_x, short drw_y,
-  short src_w, short src_h, 
+  short src_w, short src_h,
   short drw_w, short drw_h,
-  int id, unsigned char* buf, 
-  short width, short height, 
+  int id, unsigned char* buf,
+  short width, short height,
   Bool sync,
   RegionPtr clipBoxes, pointer data,
   DrawablePtr pDraw
@@ -686,7 +686,7 @@ CHIPSPutImage(
    pPriv->doubleBuffer = (pScrn->currentMode->Flags & V_DBLSCAN) != V_DBLSCAN;
 
    if (pPriv->doubleBuffer)
-       new_size <<= 1; 
+       new_size <<= 1;
 
    switch(id) {
    case FOURCC_YV12:		/* YV12 */
@@ -698,15 +698,15 @@ CHIPSPutImage(
    default:			/* RGB15, RGB16, YUY2 */
 	srcPitch = (width << 1);
 	break;
-   }  
+   }
 
    if(!(pPriv->linear = CHIPSAllocateMemory(pScrn, pPriv->linear, new_size))) {
        if (pPriv->doubleBuffer
-	   && (pPriv->linear = CHIPSAllocateMemory(pScrn, pPriv->linear, 
+	   && (pPriv->linear = CHIPSAllocateMemory(pScrn, pPriv->linear,
 					      new_size >> 1))) {
          new_size >>= 1;
 	 pPriv->doubleBuffer = FALSE;
-   } else 
+   } else
 	return BadAlloc;
    }
 
@@ -719,7 +719,7 @@ CHIPSPutImage(
    offset = pPriv->linear->offset * bpp;
    if (!pPriv->manualDoubleBuffer)
      pPriv->currentBuffer = CHIPSWaitGetNextFrame(cPtr);
-   if(pPriv->doubleBuffer && pPriv->currentBuffer) 
+   if(pPriv->doubleBuffer && pPriv->currentBuffer)
 	offset += (new_size * bpp) >> 1;
 
    dst_start = cPtr->FbBase + offset + left + (top * dstPitch);
@@ -729,9 +729,9 @@ CHIPSPutImage(
         top &= ~1;
 	tmp = ((top >> 1) * srcPitch2) + (left >> 2);
 	offset2 += tmp;
-	offset3 += tmp; 
+	offset3 += tmp;
 	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
-	CHIPSCopyMungedData(buf + (top * srcPitch) + (left >> 1), 
+	CHIPSCopyMungedData(buf + (top * srcPitch) + (left >> 1),
 			  buf + offset2, buf + offset3, dst_start,
 			  srcPitch, srcPitch2, dstPitch, nlines, npixels);
 	break;
@@ -740,7 +740,7 @@ CHIPSPutImage(
 	nlines = ((y2 + 0xffff) >> 16) - top;
 	CHIPSCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
 	break;
-   }  
+   }
 
    /* update cliplist */
    if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
@@ -748,23 +748,23 @@ CHIPSPutImage(
         xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
    }
 
-   offset += top * dstPitch;   
+   offset += top * dstPitch;
    CHIPSDisplayVideo(pScrn, id, offset, width, height, dstPitch,
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h, TRUE);
 
    pPriv->videoStatus = CLIENT_VIDEO_ON;
-   
+
    if (pPriv->manualDoubleBuffer)
-     pPriv->currentBuffer ^= 1;   
+     pPriv->currentBuffer ^= 1;
 
    return Success;
 }
 
-static int 
+static int
 CHIPSQueryImageAttributes(
-  ScrnInfoPtr pScrn, 
-  int id, 
-  unsigned short *w, unsigned short *h, 
+  ScrnInfoPtr pScrn,
+  int id,
+  unsigned short *w, unsigned short *h,
   int *pitches, int *offsets
 ){
     int size, tmp;
@@ -837,11 +837,11 @@ typedef struct {
   Bool isOn;
 } OffscreenPrivRec, * OffscreenPrivPtr;
 
-static int 
+static int
 CHIPSAllocateSurface(
     ScrnInfoPtr pScrn,
     int id,
-    unsigned short w, 	
+    unsigned short w,
     unsigned short h,
     XF86SurfacePtr surface
 ){
@@ -883,7 +883,7 @@ CHIPSAllocateSurface(
     pPriv->isOn = FALSE;
 
     surface->pScrn = pScrn;
-    surface->id = id;   
+    surface->id = id;
     surface->pitches[0] = pitch;
     surface->offsets[0] = linear->offset * bpp;
     surface->devPrivate.ptr = (pointer)pPriv;
@@ -891,7 +891,7 @@ CHIPSAllocateSurface(
     return Success;
 }
 
-static int 
+static int
 CHIPSStopSurface(
     XF86SurfacePtr surface
 ){
@@ -911,7 +911,7 @@ CHIPSStopSurface(
 }
 
 
-static int 
+static int
 CHIPSFreeSurface(
     XF86SurfacePtr surface
 ){
@@ -933,7 +933,7 @@ CHIPSGetSurfaceAttribute(
     Atom attribute,
     INT32 *value
 ){
-    return CHIPSGetPortAttribute(pScrn, attribute, value, 
+    return CHIPSGetPortAttribute(pScrn, attribute, value,
 			(pointer)(GET_PORT_PRIVATE(pScrn)));
 }
 
@@ -943,17 +943,17 @@ CHIPSSetSurfaceAttribute(
     Atom attribute,
     INT32 value
 ){
-    return CHIPSSetPortAttribute(pScrn, attribute, value, 
+    return CHIPSSetPortAttribute(pScrn, attribute, value,
 			(pointer)(GET_PORT_PRIVATE(pScrn)));
 }
 
 
-static int 
+static int
 CHIPSDisplaySurface(
     XF86SurfacePtr surface,
-    short src_x, short src_y, 
+    short src_x, short src_y,
     short drw_x, short drw_y,
-    short src_w, short src_h, 
+    short src_w, short src_h,
     short drw_w, short drw_h,
     RegionPtr clipBoxes
 ){
@@ -974,7 +974,7 @@ CHIPSDisplaySurface(
     dstBox.y1 = drw_y;
     dstBox.y2 = drw_y + drw_h;
 
-    if(!xf86XVClipVideoHelper(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, 
+    if(!xf86XVClipVideoHelper(&dstBox, &x1, &x2, &y1, &y2, clipBoxes,
 			      surface->width, surface->height))
 	return Success;
 
@@ -985,17 +985,17 @@ CHIPSDisplaySurface(
 
     if (portPriv->doubleBuffer)
       portPriv->currentBuffer = CHIPSSetCurrentPlaybackBuffer(cPtr,0);
-    else 
+    else
       portPriv->currentBuffer = 0;
 
-    CHIPSDisplayVideo(pScrn, surface->id, surface->offsets[0], 
+    CHIPSDisplayVideo(pScrn, surface->id, surface->offsets[0],
 	     surface->width, surface->height, surface->pitches[0],
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h, FALSE);
     xf86XVFillKeyHelper(pScrn->pScreen, portPriv->colorKey, clipBoxes);
 
     pPriv->isOn = TRUE;
     if(portPriv->videoStatus & CLIENT_VIDEO_ON) {
-	REGION_EMPTY(pScrn->pScreen, &portPriv->clip);   
+	REGION_EMPTY(pScrn->pScreen, &portPriv->clip);
 	UpdateCurrentTime();
 	portPriv->videoStatus = FREE_TIMER;
 	portPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
@@ -1006,7 +1006,7 @@ CHIPSDisplaySurface(
 }
 
 
-static void 
+static void
 CHIPSInitOffscreenImages(ScreenPtr pScreen)
 {
     XF86OffscreenImagePtr offscreenImages;
@@ -1016,7 +1016,7 @@ CHIPSInitOffscreenImages(ScreenPtr pScreen)
 	return;
 
     offscreenImages[0].image = &Images[0];
-    offscreenImages[0].flags = VIDEO_OVERLAID_IMAGES | 
+    offscreenImages[0].flags = VIDEO_OVERLAID_IMAGES |
 			       VIDEO_CLIP_TO_VIEWPORT;
     offscreenImages[0].alloc_surface = CHIPSAllocateSurface;
     offscreenImages[0].free_surface = CHIPSFreeSurface;
@@ -1028,6 +1028,6 @@ CHIPSInitOffscreenImages(ScreenPtr pScreen)
     offscreenImages[0].max_height = 1024;
     offscreenImages[0].num_attributes = NUM_ATTRIBUTES;
     offscreenImages[0].attributes = Attributes;
-    
+
     xf86XVRegisterOffscreenImages(pScreen, offscreenImages, 1);
 }

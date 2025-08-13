@@ -10,7 +10,7 @@
 #include "dgaproc.h"
 
 
-static Bool CHIPS_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
+static Bool CHIPS_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
 					int *, int *, int *);
 static Bool CHIPS_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  CHIPS_GetViewport(ScrnInfoPtr);
@@ -49,7 +49,7 @@ DGAFunctionRec CHIPS_HiQVDGAFuncs = {
 
 Bool
 CHIPSDGAInit(ScreenPtr pScreen)
-{   
+{
    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
    CHIPSPtr cPtr = CHIPSPTR(pScrn);
    DGAModePtr modes = NULL, newmodes = NULL, currentMode;
@@ -110,7 +110,7 @@ SECOND_PASS:
 	    currentMode->imageHeight =  imlines;
 	    currentMode->pixmapWidth = currentMode->imageWidth;
 	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
+	    currentMode->maxViewportX = currentMode->imageWidth -
 					currentMode->viewportWidth;
 	    /* this might need to get clamped to some maximum */
 	    currentMode->maxViewportY = currentMode->imageHeight -
@@ -118,18 +118,18 @@ SECOND_PASS:
 	    oneMore = FALSE;
 	    goto SECOND_PASS;
 	} else {
-	    currentMode->bytesPerScanline = 
+	    currentMode->bytesPerScanline =
 			((pScrn->displayWidth * Bpp) + 3) & ~3L;
 	    currentMode->imageWidth = pScrn->displayWidth;
 	    currentMode->imageHeight =  imlines;
 	    currentMode->pixmapWidth = currentMode->imageWidth;
 	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
+	    currentMode->maxViewportX = currentMode->imageWidth -
 					currentMode->viewportWidth;
 	    /* this might need to get clamped to some maximum */
 	    currentMode->maxViewportY = currentMode->imageHeight -
 					currentMode->viewportHeight;
-	}	    
+	}
 
 	pMode = pMode->next;
 	if(pMode == firstMode)
@@ -140,12 +140,12 @@ SECOND_PASS:
    cPtr->DGAModes = modes;
 
    if (IS_HiQV(cPtr)) {
-	return DGAInit(pScreen, &CHIPS_HiQVDGAFuncs, modes, num);  
+	return DGAInit(pScreen, &CHIPS_HiQVDGAFuncs, modes, num);
    } else {
 	if(!cPtr->UseMMIO) {
-	    return DGAInit(pScreen, &CHIPS_DGAFuncs, modes, num);  
+	    return DGAInit(pScreen, &CHIPS_DGAFuncs, modes, num);
 	} else {
-	    return DGAInit(pScreen, &CHIPS_MMIODGAFuncs, modes, num);  
+	    return DGAInit(pScreen, &CHIPS_MMIODGAFuncs, modes, num);
 	}
    }
 }
@@ -176,18 +176,18 @@ CHIPS_SetMode(
 	    cPtr->DGAactive = TRUE;
 	}
 
-	pScrn->displayWidth = pMode->bytesPerScanline / 
+	pScrn->displayWidth = pMode->bytesPerScanline /
 			      (pMode->bitsPerPixel >> 3);
 
         CHIPSSwitchMode(SWITCH_MODE_ARGS(pScrn, pMode->mode));
    }
-   
+
    return TRUE;
 }
 
 
 
-static int  
+static int
 CHIPS_GetViewport(
   ScrnInfoPtr pScrn
 ){
@@ -196,15 +196,15 @@ CHIPS_GetViewport(
     return cPtr->DGAViewportStatus;
 }
 
-static void 
+static void
 CHIPS_SetViewport(
-   ScrnInfoPtr pScrn, 
-   int x, int y, 
+   ScrnInfoPtr pScrn,
+   int x, int y,
    int flags
    ){
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-  
+
     if (flags & DGA_FLIP_RETRACE) {
 	while ((hwp->readST01(hwp)) & 0x08){};
 	while (!((hwp->readST01(hwp)) & 0x08)){};
@@ -214,9 +214,9 @@ CHIPS_SetViewport(
     cPtr->DGAViewportStatus = 0;  /* CHIPSAdjustFrame loops until finished */
 }
 
-static Bool 
+static Bool
 CHIPS_OpenFramebuffer(
-   ScrnInfoPtr pScrn, 
+   ScrnInfoPtr pScrn,
    char **name,
    unsigned char **mem,
    int *size,

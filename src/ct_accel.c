@@ -67,7 +67,7 @@
 #define CTNAME(subname) CATNAME(CHIPS,subname)
 #endif
 
-Bool 
+Bool
 CTNAME(AccelInit)(ScreenPtr pScreen)
 {
     return FALSE;

@@ -6,7 +6,7 @@
 
 int main(void)
 {
-    int i, HTotal, HDisplay, HSyncStart, HSyncEnd, 
+    int i, HTotal, HDisplay, HSyncStart, HSyncEnd,
     VTotal, VDisplay, VSyncStart, VSyncEnd;
     unsigned char storeReg, bpp, shift, IOSS = 0, MSS = 0, again = 0;
     unsigned short port;
@@ -14,7 +14,7 @@ int main(void)
     int is69030 = 0;
 
     SET_IOPL();
-    
+
     printf("0x3C6\t0x%X\n",inw(0x3C6));
 
 /* Check to see if the Chip is HiQV */
@@ -41,7 +41,7 @@ int main(void)
 	printf("Pipeline A:\n");
       }
     }
-        
+
  again:
     printf("port 0x3D6 (C&T)\n");
     storeReg = inb(0x3D6);
@@ -57,7 +57,7 @@ int main(void)
 	}
 	outb(0x3D6,0xE2);
 	bpp = inb(0x3D7)&0xF0;
-    } else {	
+    } else {
 	outb(0x3D6, 0x70);
 	outw(0x3D6, (inw(0x3D6) | 0x8070));
 	outw(0x46E8,0x0016);	/*setup mode*/
@@ -76,7 +76,7 @@ int main(void)
 	outb(0x3D6,0x2B);
 	bpp = inb(0x3D7)&0xF0;
     }
-    
+
     switch(bpp){
       case 0x20:
 	bpp = 4;
@@ -118,14 +118,14 @@ int main(void)
 	    printf("MR 0x%2.2X\t0x%2.2X\n",i,inb(0x3D3)&0xFF);
 	}
 	outb(0x3D3,storeReg);
-    } else {	
+    } else {
 	for(i = 0;i < 0x40;i++){
 	    outb(0x3D4,i);
 	    printf("CR 0x%2.2X\t0x%2.2X\n",i,inb(0x3D5)&0xFF);
 	}
 	outb(0x3D4,storeReg);
     }
-    
+
 
     printf("port 0x3CE (GC)\n");
     storeReg = inb(0x3CE);
@@ -185,7 +185,7 @@ int main(void)
 	printf("0x102\t0x%8X\n",inl(0x102));
 	printf("0x103\t0x%8X\n",inl(0x103));
 
-    }    
+    }
 
     storeReg = inb(0x3D4);
     {
@@ -200,7 +200,7 @@ int main(void)
 	outb(0x3D4,5);
 	HSyncEnd += HSyncStart >> shift;
 	HSyncEnd <<= shift;
-	
+
 	outb(0x3D4,6);
 	VTotal = inb(0x3D5)&0xFF;
 	outb(0x3D4,7);
@@ -216,14 +216,14 @@ int main(void)
 	VDisplay += 1;
 	outb(0x3D4,0x10);
 	VSyncStart |= inb(0x3D5)&0xFF;
-	
+
 	outb(0x3D4,0x11);
 	VSyncEnd = inb(0x3D5)&0xF;
 	VSyncEnd += VSyncStart;
-	
+
     }
     outb(0x3D4,storeReg);
-    
+
     printf("\nModeLine with port 0x3D4 (CRTC) %d %d %d %d %d %d %d %d\n",
 	   HDisplay, HSyncStart, HSyncEnd, HTotal,
 	   VDisplay, VSyncStart, VSyncEnd, VTotal);

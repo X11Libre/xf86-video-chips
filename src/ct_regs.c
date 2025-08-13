@@ -43,7 +43,7 @@
  *    ISA has no method to disable I/O access to a card ISA multihead will
  *    never be supported.
  *
- * 2) ct_Blitter.h, ct_BlitMM.h and ct_BltHiQV.h, where speed is crucial and 
+ * 2) ct_Blitter.h, ct_BlitMM.h and ct_BltHiQV.h, where speed is crucial and
  *    we know exactly whether we are using MMIO or PIO.
  *
  * 3) The 6554x 32bit DRxx in ct_cursor.c where the choice between MMIO and
@@ -471,7 +471,7 @@ chipsMmioReadST01(vgaHWPtr hwp)
 	return minb(CHIPS_MMIO_COLOR_STAT_1);
 }
 
-static CARD8  
+static CARD8
 chipsMmioReadFCR(vgaHWPtr hwp)
 {
     return minb(CHIPS_MMIO_FEATURE_R);
