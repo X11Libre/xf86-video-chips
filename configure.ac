@@ -23,7 +23,7 @@
 # Initialize Autoconf
 AC_PREREQ([2.60])
 AC_INIT([xlibre-xf86-video-chips],
-        [1.5.0],
+        [1.5.0.3],
         [https://github.com/X11Libre/xf86-video-chips/issues],
         [xlibre-xf86-video-chips])
 AC_CONFIG_SRCDIR([Makefile.am])
