@@ -19,10 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 /*
  * The functions in this file are used to read/write the C&T extension register
