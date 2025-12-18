@@ -91,9 +91,6 @@ AM_CONDITIONAL(BUILD_UTILS, [test x$HAVE_INB = xyes])
 
 AC_SUBST([moduledir])
 
-DRIVER_NAME=chips
-AC_SUBST([DRIVER_NAME])
-
 AC_CONFIG_FILES([
                 Makefile
                 src/Makefile
