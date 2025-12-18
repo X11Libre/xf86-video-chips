@@ -140,12 +140,8 @@
 /* Mandatory functions */
 static const OptionInfoRec *	CHIPSAvailableOptions(int chipid, int busid);
 static void     CHIPSIdentify(int flags);
-#ifdef XSERVER_LIBPCIACCESS
 static Bool     CHIPSPciProbe(DriverPtr drv, int entity_num,
 			      struct pci_device *dev, intptr_t match_data);
-#else
-static Bool     CHIPSProbe(DriverPtr drv, int flags);
-#endif
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool     CHIPSScreenInit(SCREEN_INIT_ARGS_DECL);
 static Bool     CHIPSEnterVT(VT_FUNC_ARGS_DECL);
@@ -475,9 +471,6 @@ static DisplayModeRec ChipsNTSCMode = {
 #define CHIPS_MINOR_VERSION PACKAGE_VERSION_MINOR
 #define CHIPS_PATCHLEVEL PACKAGE_VERSION_PATCHLEVEL
 
-
-#ifdef XSERVER_LIBPCIACCESS
-
 #ifndef _XF86_PCIINFO_H
 #define PCI_VENDOR_CHIPSTECH		0x102C
 /* Chips & Tech */
@@ -505,7 +498,6 @@ static const struct pci_id_match chips_device_match[] = {
   CHIPS_DEVICE_MATCH(PCI_CHIP_69030, CHIPS_CT69030),
   { 0, 0, 0 },
 };
-#endif
 
 /*
  * This contains the functions needed by the server after loading the driver
@@ -519,20 +511,13 @@ _X_EXPORT DriverRec CHIPS = {
 	CHIPS_VERSION,
 	CHIPS_DRIVER_NAME,
 	CHIPSIdentify,
-#ifdef XSERVER_LIBPCIACCESS
 	NULL,
-#else
-	CHIPSProbe,
-#endif
 	CHIPSAvailableOptions,
 	NULL,
 	0,
 	NULL,
-
-#ifdef XSERVER_LIBPCIACCESS
 	chips_device_match,
 	CHIPSPciProbe,
-#endif
 };
 
 static SymTabRec CHIPSChipsets[] = {
@@ -780,7 +765,6 @@ CHIPSAvailableOptions(int chipid, int busid)
 }
 
 /* Mandatory */
-#ifdef XSERVER_LIBPCIACCESS
 Bool
 CHIPSPciProbe(DriverPtr drv, int entity_num, struct pci_device * dev,
 	    intptr_t match_data)
@@ -844,97 +828,6 @@ CHIPSPciProbe(DriverPtr drv, int entity_num, struct pci_device * dev,
 
     return (pScrn != NULL);
 }
-#else
-static Bool
-CHIPSProbe(DriverPtr drv, int flags)
-{
-    Bool foundScreen = FALSE;
-    int numDevSections, numUsed;
-    GDevPtr *devSections;
-    int *usedChips;
-    int i;
-
-    /*
-     * Find the config file Device sections that match this
-     * driver, and return if there are none.
-     */
-    if ((numDevSections = xf86MatchDevice(CHIPS_DRIVER_NAME,
-					  &devSections)) <= 0) {
-	return FALSE;
-    }
-    /* PCI BUS */
-    if (xf86GetPciVideoInfo() ) {
-	numUsed = xf86MatchPciInstances(CHIPS_NAME, PCI_VENDOR_CHIPSTECH,
-					CHIPSChipsets, CHIPSPCIchipsets,
-					devSections,numDevSections, drv,
-					&usedChips);
-	if (numUsed > 0) {
-	    if (flags & PROBE_DETECT)
-		foundScreen = TRUE;
-	    else for (i = 0; i < numUsed; i++) {
-		EntityInfoPtr pEnt;
-		/* Allocate a ScrnInfoRec  */
-		ScrnInfoPtr pScrn = NULL;
-		if ((pScrn = xf86ConfigPciEntity(pScrn,0,usedChips[i],
-						       CHIPSPCIchipsets,NULL,
-						       NULL,NULL,NULL,NULL))){
-		    pScrn->driverVersion = CHIPS_VERSION;
-		    pScrn->driverName    = CHIPS_DRIVER_NAME;
-		    pScrn->name          = CHIPS_NAME;
-		    pScrn->Probe         = CHIPSProbe;
-		    pScrn->PreInit       = CHIPSPreInit;
-		    pScrn->ScreenInit    = CHIPSScreenInit;
-		    pScrn->SwitchMode    = CHIPSSwitchMode;
-		    pScrn->AdjustFrame   = CHIPSAdjustFrame;
-		    pScrn->EnterVT       = CHIPSEnterVT;
-		    pScrn->LeaveVT       = CHIPSLeaveVT;
-		    pScrn->FreeScreen    = CHIPSFreeScreen;
-		    pScrn->ValidMode     = CHIPSValidMode;
-		    foundScreen = TRUE;
-		}
-
-		/*
-		 * For cards that can do dual head per entity, mark the entity
-		 * as shareable.
-		 */
-		pEnt = xf86GetEntityInfo(usedChips[i]);
-		if (pEnt->chipset == CHIPS_CT69030) {
-		    CHIPSEntPtr cPtrEnt = NULL;
-		    DevUnion *pPriv;
-
-		    xf86SetEntitySharable(usedChips[i]);
-		    /* Allocate an entity private if necessary */
-		    if (CHIPSEntityIndex < 0)
-			CHIPSEntityIndex = xf86AllocateEntityPrivateIndex();
-		    pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
-				CHIPSEntityIndex);
-		    if (!pPriv->ptr) {
-			pPriv->ptr = XNFcallocarray(sizeof(CHIPSEntRec), 1);
-			cPtrEnt = pPriv->ptr;
-			cPtrEnt->lastInstance = -1;
-		    } else {
-			cPtrEnt = pPriv->ptr;
-		    }
-		    /*
-		     * Set the entity instance for this instance of the
-		     * driver.  For dual head per card, instance 0 is the
-		     * "master" instance, driving the primary head, and
-                     * instance 1 is the "slave".
-		     */
-		    cPtrEnt->lastInstance++;
-		    xf86SetEntityInstanceForScreen(pScrn, pScrn->entityList[0],
-						   cPtrEnt->lastInstance);
-		}
-
-	    }
-	    free(usedChips);
-	}
-    }
-
-    free(devSections);
-    return foundScreen;
-}
-#endif
 
 /* Mandatory */
 Bool
@@ -970,9 +863,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     /* This is the general case */
     for (i = 0; i<pScrn->numEntities; i++) {
 	cPtr->pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
-#ifndef XSERVER_LIBPCIACCESS
-	if (cPtr->pEnt->resources) return FALSE;
-#endif
 	/* If we are using libpciaccess this is already set in CHIPSPciProbe.
 	 * If we are using something else we need to set it here.
 	 */
@@ -989,11 +879,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	if (cPtr->pEnt->location.type == BUS_PCI) {
 	    pciPtr = xf86GetPciInfoForEntity(cPtr->pEnt->index);
 	    cPtr->PciInfo = pciPtr;
-#ifndef XSERVER_LIBPCIACCESS
-	    cPtr->PciTag = pciTag(cPtr->PciInfo->bus,
-				  cPtr->PciInfo->device,
-				  cPtr->PciInfo->func);
-#endif
 	}
     }
     /* INT10 */
@@ -1206,14 +1091,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-#ifndef XSERVER_LIBPCIACCESS
-    if (cPtr->Flags & ChipsLinearSupport)
- 	xf86SetOperatingState(resVgaMem, cPtr->pEnt->index, ResDisableOpr);
-
-    if (cPtr->MMIOBaseVGA)
- 	xf86SetOperatingState(resVgaIo, cPtr->pEnt->index, ResDisableOpr);
-#endif
-
     vbeFree(cPtr->pVbe);
     cPtr->pVbe = NULL;
     return TRUE;
@@ -1238,9 +1115,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     CHIPSPanelSizePtr Size = &cPtr->PanelSize;
     CHIPSMemClockPtr MemClk = &cPtr->MemClock;
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
-#ifndef XSERVER_LIBPCIACCESS
-    resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
-#endif
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -1406,10 +1280,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	        cPtr->FbAddress =  PCI_REGION_BASE(cPtr->PciInfo, 0, REGION_MEM) & 0xff800000;
 
 	    from = X_PROBED;
-#ifndef XSERVER_LIBPCIACCESS
-	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone))
-		cPtr->Flags &= ~ChipsLinearSupport;
-#endif
 	} else 	{
 	    if (cPtr->pEnt->device->MemBase) {
 		cPtr->FbAddress = cPtr->pEnt->device->MemBase;
@@ -1421,14 +1291,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 				    (0x80 & (cPtr->readXR(cPtr, 0x05)))) << 16;
 		from = X_PROBED;
 	    }
-#ifndef XSERVER_LIBPCIACCESS
-	    linearRes[0].rBegin = cPtr->FbAddress;
-	    linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
-	    if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
-		cPtr->Flags &= ~ChipsLinearSupport;
-		from = X_PROBED;
-	    }
-#endif
 	}
     }
     if (cPtr->Flags & ChipsLinearSupport) {
@@ -2259,9 +2121,6 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     Bool useLinear = FALSE;
     const char *s;
-#ifndef XSERVER_LIBPCIACCESS
-    resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
-#endif
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -2463,14 +2322,6 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    cPtr->FbAddress |= ((mask  & (cPtr->readXR(cPtr, 0x08))) << 16);
 	    from = X_PROBED;
 	}
-#ifndef XSERVER_LIBPCIACCESS
-	linearRes[0].rBegin = cPtr->FbAddress;
-	linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
-	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
-	    useLinear = FALSE;
-	    from = X_PROBED;
-	}
-#endif
     }
 
     if (useLinear) {
@@ -2581,25 +2432,6 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
 	}
-#ifndef XSERVER_LIBPCIACCESS
-	linearRes[0].type = ResExcIoSparse | ResBios | ResBus;
-	linearRes[0].rBase = cPtr->Regs32[0];
-	linearRes[0].rMask = 0x83FC;
-	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
-	    if (cPtr->Flags & ChipsAccelSupport) {
-		cPtr->Flags &= ~ChipsAccelSupport;
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			   "Cannot allocate IO registers: "
-			   "Disabling acceleration\n");
-	    }
-	    if (cPtr->Accel.UseHWCursor) {
-		cPtr->Accel.UseHWCursor = FALSE;
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			   "Cannot allocate IO registers: "
-			   "Disabling HWCursor\n");
-	    }
-	}
-#endif
     }
 
     cPtr->ClockMulFactor = ((pScrn->bitsPerPixel >= 8) ? bytesPerPixel : 1);
@@ -2725,9 +2557,6 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     Bool useLinear = FALSE;
     const char *s;
-#ifndef XSERVER_LIBPCIACCESS
-    resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
-#endif
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -2929,12 +2758,6 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
 	if (cPtr->pEnt->location.type == BUS_PCI) {
 	    cPtr->FbAddress =  PCI_REGION_BASE(cPtr->PciInfo, 0, REGION_MEM) & 0xff800000;
-#ifndef XSERVER_LIBPCIACCESS
-	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone)) {
-	        useLinear = FALSE;
-		from = X_PROBED;
-	    }
-#endif
 	} else {
 	    if (cPtr->pEnt->device->MemBase) {
 		cPtr->FbAddress = cPtr->pEnt->device->MemBase;
@@ -2958,14 +2781,6 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 		}
 		from = X_PROBED;
 	    }
-#ifndef XSERVER_LIBPCIACCESS
-	    linearRes[0].rBegin = cPtr->FbAddress;
-	    linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
-	    if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
-		useLinear = FALSE;
-		from = X_PROBED;
-	    }
-#endif
 	}
     }
 
@@ -3265,25 +3080,6 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
 	}
-#ifndef XSERVER_LIBPCIACCESS
-	linearRes[0].type = ResExcIoSparse | ResBios | ResBus;
-	linearRes[0].rBase = cPtr->Regs32[0];
-	linearRes[0].rMask = 0x83FC;
-	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
-	    if (cPtr->Flags & ChipsAccelSupport) {
-		cPtr->Flags &= ~ChipsAccelSupport;
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			   "Cannot allocate IO registers: "
-			   "Disabling acceleration\n");
-	    }
-	    if (cPtr->Accel.UseHWCursor) {
-		cPtr->Accel.UseHWCursor = FALSE;
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			   "Cannot allocate IO registers: "
-			   "Disabling HWCursor\n");
-	    }
-	}
-#endif
     }
 
     /* sync reset ignored on this chipset */
@@ -3684,9 +3480,6 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
     int init_picture = 0;
     VisualPtr visual;
     int allocatebase, freespace, currentaddr;
-#ifndef XSERVER_LIBPCIACCESS
-    unsigned int racflag = 0;
-#endif
     unsigned char *FBStart;
     int height, width, displayWidth;
     CHIPSEntPtr cPtrEnt = NULL;
@@ -4140,14 +3933,6 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 		NULL, CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
 	return FALSE;
 
-#ifndef XSERVER_LIBPCIACCESS
-    racflag = RAC_COLORMAP;
-    if (cAcl->UseHWCursor)
-        racflag |= RAC_CURSOR;
-    racflag |= (RAC_FB | RAC_VIEWPORT);
-    /* XXX Check if I/O and Mem flags need to be the same. */
-    pScrn->racIoFlags = pScrn->racMemFlags = racflag;
-#endif
 #ifdef ENABLE_SILKEN_MOUSE
 	xf86SetSilkenMouse(pScreen);
 #endif
@@ -6722,15 +6507,6 @@ chipsMapMem(ScrnInfoPtr pScrn)
     if (cPtr->Flags & ChipsLinearSupport) {
 	if (cPtr->UseMMIO) {
 	    if (IS_HiQV(cPtr)) {
-#ifndef XSERVER_LIBPCIACCESS
-		if (cPtr->pEnt->location.type == BUS_PCI)
-		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
-			   VIDMEM_MMIO_32BIT,cPtr->PciTag, cPtr->IOAddress,
-			   0x20000L);
-		 else
-		    cPtr->MMIOBase = xf86MapVidMem(pScrn->scrnIndex,
-			   VIDMEM_MMIO_32BIT, cPtr->IOAddress, 0x20000L);
-#else
 		{
 		  void** result = (void**)&cPtr->MMIOBase;
 		  int err = pci_device_map_range(cPtr->PciInfo,
@@ -6741,17 +6517,7 @@ chipsMapMem(ScrnInfoPtr pScrn)
 		  if (err)
 		    return FALSE;
 		}
-#endif
 	    } else {
-#ifndef XSERVER_LIBPCIACCESS
-		if (cPtr->pEnt->location.type == BUS_PCI)
-		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
-			  VIDMEM_MMIO_32BIT, cPtr->PciTag, cPtr->IOAddress,
-			  0x10000L);
-		else
-		    cPtr->MMIOBase = xf86MapVidMem(pScrn->scrnIndex,
-			  VIDMEM_MMIO_32BIT, cPtr->IOAddress, 0x10000L);
-#else
 		{
 		  void** result = (void**)&cPtr->MMIOBase;
 		  int err = pci_device_map_range(cPtr->PciInfo,
@@ -6762,7 +6528,6 @@ chipsMapMem(ScrnInfoPtr pScrn)
 		  if (err)
 		    return FALSE;
 		}
-#endif
 	    }
 
 	    if (cPtr->MMIOBase == NULL)
@@ -6785,15 +6550,6 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	    }
 	  }
 
-#ifndef XSERVER_LIBPCIACCESS
-	  if (cPtr->pEnt->location.type == BUS_PCI)
-	      cPtr->FbBase = xf86MapPciMem(pScrn->scrnIndex,VIDMEM_FRAMEBUFFER,
- 			          cPtr->PciTag, Addr, Map);
-
-	  else
-	      cPtr->FbBase = xf86MapVidMem(pScrn->scrnIndex,VIDMEM_FRAMEBUFFER,
-					   Addr, Map);
-#else
 	  {
 	    void** result = (void**)&cPtr->FbBase;
 	    int err = pci_device_map_range(cPtr->PciInfo,
@@ -6806,19 +6562,11 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	      return FALSE;
 	  }
 
-#endif
-
 	  if (cPtr->FbBase == NULL)
 	      return FALSE;
 	}
 	if (cPtr->Flags & ChipsFullMMIOSupport) {
-#ifndef XSERVER_LIBPCIACCESS
-		cPtr->MMIOBaseVGA = xf86MapPciMem(pScrn->scrnIndex,
-						  VIDMEM_MMIO,cPtr->PciTag,
-						  cPtr->IOAddress, 0x2000L);
-#else
 		cPtr->MMIOBaseVGA = cPtr->MMIOBase;
-#endif
 	    /* 69030 MMIO Fix.
 	     *
 	     * The hardware lets us map the PipeB data registers
@@ -6828,11 +6576,6 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	     * pipe and to toggle between them as necessary. -GHB
 	     */
 	    if (cPtr->Flags & ChipsDualChannelSupport)
-#ifndef XSERVER_LIBPCIACCESS
-	       	cPtr->MMIOBasePipeB = xf86MapPciMem(pScrn->scrnIndex,
-				      VIDMEM_MMIO,cPtr->PciTag,
-				      cPtr->IOAddress + 0x800000, 0x2000L);
-#else
 	    {
 	      void** result = (void**)&cPtr->MMIOBasePipeB;
 	      int err = pci_device_map_range(cPtr->PciInfo,
@@ -6843,8 +6586,6 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	      if (err)
 		return FALSE;
 	    }
-#endif
-
 	    cPtr->MMIOBasePipeA = cPtr->MMIOBaseVGA;
 	}
     } else {
@@ -6867,39 +6608,19 @@ chipsUnmapMem(ScrnInfoPtr pScrn)
 
     if (cPtr->Flags & ChipsLinearSupport) {
 	if (IS_HiQV(cPtr)) {
-#ifndef XSERVER_LIBPCIACCESS
-	    if (cPtr->MMIOBase)
-		xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase,
-				0x20000);
-	    if (cPtr->MMIOBasePipeB)
-		xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBasePipeB,
-				0x20000);
-#else
 	    if (cPtr->MMIOBase)
 	      pci_device_unmap_range(cPtr->PciInfo, cPtr->MMIOBase, 0x20000);
 
 	    if (cPtr->MMIOBasePipeB)
 	      pci_device_unmap_range(cPtr->PciInfo, cPtr->MMIOBasePipeB, 0x2000);
 
-#endif
 	    cPtr->MMIOBasePipeB = NULL;
 	} else {
-#ifndef XSERVER_LIBPCIACCESS
-	  if (cPtr->MMIOBase)
-	      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase,
-			      0x10000);
-#else
 	    if (cPtr->MMIOBase)
 	      pci_device_unmap_range(cPtr->PciInfo, cPtr->MMIOBase, 0x10000);
-#endif
 	}
 	cPtr->MMIOBase = NULL;
-#ifndef XSERVER_LIBPCIACCESS
-	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->FbBase,
-			cPtr->FbMapSize);
-#else
 	pci_device_unmap_range(cPtr->PciInfo, cPtr->FbBase, cPtr->FbMapSize);
-#endif
     }
     cPtr->FbBase = NULL;
 

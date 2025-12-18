@@ -274,9 +274,6 @@ typedef struct {
 
 typedef struct _CHIPSRec {
     pciVideoPtr		PciInfo;
-#ifndef XSERVER_LIBPCIACCESS
-    PCITAG		PciTag;
-#endif
     int			Chipset;
     EntityInfoPtr       pEnt;
     unsigned long	PIOBase;
