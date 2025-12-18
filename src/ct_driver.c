@@ -684,8 +684,6 @@ static const OptionInfoRec ChipsHiQVOptions[] = {
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
-#ifdef XFree86LOADER
-
 static MODULESETUPPROTO(chipsSetup);
 
 static XF86ModuleVersionInfo chipsVersRec =
@@ -732,8 +730,6 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	return NULL;
     }
 }
-
-#endif /* XFree86LOADER */
 
 static Bool
 CHIPSGetRec(ScrnInfoPtr pScrn)
