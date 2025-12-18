@@ -78,10 +78,5 @@ AM_CONDITIONAL(BUILD_UTILS, [test x$HAVE_INB = xyes])
 
 AC_SUBST([moduledir])
 
-AC_CONFIG_FILES([
-                Makefile
-                src/Makefile
-                man/Makefile
-                util/Makefile
-])
+AC_CONFIG_FILES([Makefile src/Makefile man/Makefile util/Makefile])
 AC_OUTPUT
