@@ -74,7 +74,17 @@ int main() {
 }
 ])], [HAVE_INB=yes], [HAVE_INB=no])
 AC_MSG_RESULT([$HAVE_INB])
-AM_CONDITIONAL(BUILD_UTILS, [test x$HAVE_INB = xyes])
+
+build_utils="$HAVE_INB"
+
+case $host_os in
+    *netbsd*)
+        build_utils="no"
+        AC_MSG_WARN([NetBSD detected. cant build utils])
+     ;;
+esac
+
+AM_CONDITIONAL(BUILD_UTILS, [test "$build_utils" = "yes"])
 
 AC_SUBST([moduledir])
 
