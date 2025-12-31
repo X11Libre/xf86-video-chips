@@ -30,6 +30,8 @@ AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR(.)
 
+AC_PROG_CC_STDC
+
 # Initialize Automake
 AM_INIT_AUTOMAKE([foreign dist-xz])
 
