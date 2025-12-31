@@ -7009,14 +7009,13 @@ chipsSetPanelType(CHIPSPtr cPtr)
 }
 
 static void
-chipsBlockHandler (ScreenPtr arg, pointer pTimeout)
+chipsBlockHandler (ScreenPtr pScreen, pointer pTimeout)
 {
-    SCREEN_PTR(arg);
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr    cPtr = CHIPSPTR(pScrn);
 
     pScreen->BlockHandler = cPtr->BlockHandler;
-    pScreen->BlockHandler(arg, pTimeout);
+    pScreen->BlockHandler(pScreen, pTimeout);
     pScreen->BlockHandler = chipsBlockHandler;
 
     if(cPtr->VideoTimerCallback) {

@@ -31,6 +31,4 @@
 #define SCRN_ARG_TYPE ScrnInfoPtr
 #define SCRN_INFO_PTR(arg1) ScrnInfoPtr pScrn = (arg1)
 
-#define SCREEN_PTR(arg1) ScreenPtr pScreen = (arg1)
-
 #endif
