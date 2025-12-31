@@ -47,6 +47,4 @@
 #define SWITCH_MODE_ARGS_DECL ScrnInfoPtr arg, DisplayModePtr mode
 #define SWITCH_MODE_ARGS(arg, m) arg, m
 
-#define FREE_SCREEN_ARGS_DECL ScrnInfoPtr arg
-
 #endif

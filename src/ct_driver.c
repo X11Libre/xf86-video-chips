@@ -147,7 +147,7 @@ static Bool     CHIPSScreenInit(SCREEN_INIT_ARGS_DECL);
 static Bool     CHIPSEnterVT(ScrnInfoPtr arg);
 static void     CHIPSLeaveVT(ScrnInfoPtr arg);
 static Bool     CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL);
-static void     CHIPSFreeScreen(FREE_SCREEN_ARGS_DECL);
+static void     CHIPSFreeScreen(ScrnInfoPtr arg);
 static ModeStatus CHIPSValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
                                  Bool verbose, int flags);
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, int mode);
@@ -4113,7 +4113,7 @@ CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL)
 
 /* Optional */
 static void
-CHIPSFreeScreen(FREE_SCREEN_ARGS_DECL)
+CHIPSFreeScreen(ScrnInfoPtr arg)
 {
     SCRN_INFO_PTR(arg);
     if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
