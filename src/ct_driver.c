@@ -143,7 +143,7 @@ static void     CHIPSIdentify(int flags);
 static Bool     CHIPSPciProbe(DriverPtr drv, int entity_num,
 			      struct pci_device *dev, intptr_t match_data);
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
-static Bool     CHIPSScreenInit(SCREEN_INIT_ARGS_DECL);
+static Bool     CHIPSScreenInit(ScreenPtr pScreen, int argc, char **argv);
 static Bool     CHIPSEnterVT(ScrnInfoPtr arg);
 static void     CHIPSLeaveVT(ScrnInfoPtr arg);
 static Bool     CHIPSCloseScreen(ScreenPtr pScreen);
@@ -3470,7 +3470,7 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 
 /* Mandatory */
 static Bool
-CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
+CHIPSScreenInit(ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     vgaHWPtr hwp;
