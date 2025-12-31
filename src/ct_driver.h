@@ -289,7 +289,7 @@ typedef struct _CHIPSRec {
     unsigned char *	ShadowPtr;
     int			ShadowPitch;
     int                 Rotate;
-    void		(*PointerMoved)(SCRN_ARG_TYPE arg, int x, int y);
+    void		(*PointerMoved)(ScrnInfoPtr arg, int x, int y);
     int                 FbOffset16;
     int                 FbSize16;
     OptionInfoPtr	Options;
@@ -433,7 +433,7 @@ void     chipsRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void     chipsRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void     chipsRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void     chipsRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
-void     chipsPointerMoved(SCRN_ARG_TYPE arg, int x, int y);
+void     chipsPointerMoved(ScrnInfoPtr pScrn, int x, int y);
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 # define BE_SWAP_APRETURE(pScrn,cPtr) \

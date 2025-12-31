@@ -35,9 +35,8 @@ chipsRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 }
 
 void
-chipsPointerMoved(SCRN_ARG_TYPE arg, int x, int y)
+chipsPointerMoved(ScrnInfoPtr pScrn, int x, int y)
 {
-    SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     int newX, newY;
 
@@ -49,7 +48,7 @@ chipsPointerMoved(SCRN_ARG_TYPE arg, int x, int y)
 	newY = pScrn->pScreen->width - x - 1;
     }
 
-    (*cPtr->PointerMoved)(arg, newX, newY);
+    cPtr->PointerMoved(pScrn, newX, newY);
 }
 
 void

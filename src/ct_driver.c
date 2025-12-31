@@ -148,7 +148,7 @@ static Bool     CHIPSEnterVT(ScrnInfoPtr arg);
 static void     CHIPSLeaveVT(ScrnInfoPtr arg);
 static Bool     CHIPSCloseScreen(ScreenPtr pScreen);
 static void     CHIPSFreeScreen(ScrnInfoPtr arg);
-static ModeStatus CHIPSValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
+static ModeStatus CHIPSValidMode(ScrnInfoPtr arg, DisplayModePtr mode,
                                  Bool verbose, int flags);
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, int mode);
 
@@ -3293,9 +3293,8 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 
 /* Mandatory */
 static Bool
-CHIPSEnterVT(ScrnInfoPtr arg)
+CHIPSEnterVT(ScrnInfoPtr pScrn)
 {
-    SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSEntPtr cPtrEnt;
 
@@ -3322,9 +3321,8 @@ CHIPSEnterVT(ScrnInfoPtr arg)
 
 /* Mandatory */
 static void
-CHIPSLeaveVT(ScrnInfoPtr arg)
+CHIPSLeaveVT(ScrnInfoPtr pScrn)
 {
-    SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     CHIPSEntPtr cPtrEnt;
@@ -3963,9 +3961,8 @@ CHIPSScreenInit(ScreenPtr pScreen, int argc, char **argv)
 
 /* Mandatory */
 Bool
-CHIPSSwitchMode(ScrnInfoPtr arg, DisplayModePtr mode)
+CHIPSSwitchMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-    SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSEntPtr cPtrEnt;
 
@@ -3983,9 +3980,8 @@ CHIPSSwitchMode(ScrnInfoPtr arg, DisplayModePtr mode)
 
 /* Mandatory */
 void
-CHIPSAdjustFrame(ScrnInfoPtr arg, int x, int y)
+CHIPSAdjustFrame(ScrnInfoPtr pScrn, int x, int y)
 {
-    SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSEntPtr cPtrEnt;
 
@@ -4113,9 +4109,8 @@ CHIPSCloseScreen(ScreenPtr pScreen)
 
 /* Optional */
 static void
-CHIPSFreeScreen(ScrnInfoPtr arg)
+CHIPSFreeScreen(ScrnInfoPtr pScrn)
 {
-    SCRN_INFO_PTR(arg);
     if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
 	vgaHWFreeHWRec(pScrn);
     CHIPSFreeRec(pScrn);
@@ -4123,9 +4118,8 @@ CHIPSFreeScreen(ScrnInfoPtr arg)
 
 /* Optional */
 static ModeStatus
-CHIPSValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode, Bool verbose, int flags)
+CHIPSValidMode(ScrnInfoPtr pScrn, DisplayModePtr mode, Bool verbose, int flags)
 {
-    SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
     /* The tests here need to be expanded */

@@ -28,7 +28,4 @@
 #ifndef COMPAT_API_H
 #define COMPAT_API_H
 
-#define SCRN_ARG_TYPE ScrnInfoPtr
-#define SCRN_INFO_PTR(arg1) ScrnInfoPtr pScrn = (arg1)
-
 #endif
