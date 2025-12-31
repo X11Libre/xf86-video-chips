@@ -44,7 +44,4 @@
 #define ADJUST_FRAME_ARGS_DECL ScrnInfoPtr arg, int x, int y
 #define ADJUST_FRAME_ARGS(arg, x, y) arg, x, y
 
-#define SWITCH_MODE_ARGS_DECL ScrnInfoPtr arg, DisplayModePtr mode
-#define SWITCH_MODE_ARGS(arg, m) arg, m
-
 #endif

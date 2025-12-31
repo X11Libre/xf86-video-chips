@@ -176,7 +176,7 @@ CHIPS_SetMode(
 	pScrn->displayWidth = pMode->bytesPerScanline /
 			      (pMode->bitsPerPixel >> 3);
 
-        CHIPSSwitchMode(SWITCH_MODE_ARGS(pScrn, pMode->mode));
+        CHIPSSwitchMode(pScrn, pMode->mode);
    }
 
    return TRUE;

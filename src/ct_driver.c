@@ -3963,7 +3963,7 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
 
 /* Mandatory */
 Bool
-CHIPSSwitchMode(SWITCH_MODE_ARGS_DECL)
+CHIPSSwitchMode(ScrnInfoPtr arg, DisplayModePtr mode)
 {
     SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
