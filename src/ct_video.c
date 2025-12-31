@@ -103,7 +103,7 @@ static XF86VideoFormatRec Formats[NUM_FORMATS] =
 
 static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
 {
-   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"}
+   {XvSettable | XvGettable, 0, (1 << 24) - 1, (char*)"XV_COLORKEY"}
 };
 
 #define NUM_IMAGES 4
