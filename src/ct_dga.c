@@ -162,14 +162,14 @@ CHIPS_SetMode(
 	/* put the ScreenParameters back */
        if (cPtr->DGAactive) {
            pScrn->displayWidth = OldDisplayWidth[index];
-	   pScrn->EnterVT(VT_FUNC_ARGS);
+	   pScrn->EnterVT(pScrn);
 
 	   cPtr->DGAactive = FALSE;
        }
    } else {
 	if(!cPtr->DGAactive) {  /* save the old parameters */
 	    OldDisplayWidth[index] = pScrn->displayWidth;
-	    pScrn->LeaveVT(VT_FUNC_ARGS);
+	    pScrn->LeaveVT(pScrn);
 	    cPtr->DGAactive = TRUE;
 	}
 

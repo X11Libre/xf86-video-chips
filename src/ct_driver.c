@@ -144,8 +144,8 @@ static Bool     CHIPSPciProbe(DriverPtr drv, int entity_num,
 			      struct pci_device *dev, intptr_t match_data);
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool     CHIPSScreenInit(SCREEN_INIT_ARGS_DECL);
-static Bool     CHIPSEnterVT(VT_FUNC_ARGS_DECL);
-static void     CHIPSLeaveVT(VT_FUNC_ARGS_DECL);
+static Bool     CHIPSEnterVT(ScrnInfoPtr arg);
+static void     CHIPSLeaveVT(ScrnInfoPtr arg);
 static Bool     CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL);
 static void     CHIPSFreeScreen(FREE_SCREEN_ARGS_DECL);
 static ModeStatus CHIPSValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
@@ -3293,7 +3293,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 
 /* Mandatory */
 static Bool
-CHIPSEnterVT(VT_FUNC_ARGS_DECL)
+CHIPSEnterVT(ScrnInfoPtr arg)
 {
     SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -3322,7 +3322,7 @@ CHIPSEnterVT(VT_FUNC_ARGS_DECL)
 
 /* Mandatory */
 static void
-CHIPSLeaveVT(VT_FUNC_ARGS_DECL)
+CHIPSLeaveVT(ScrnInfoPtr arg)
 {
     SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);

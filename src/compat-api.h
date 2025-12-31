@@ -49,7 +49,4 @@
 
 #define FREE_SCREEN_ARGS_DECL ScrnInfoPtr arg
 
-#define VT_FUNC_ARGS_DECL ScrnInfoPtr arg
-#define VT_FUNC_ARGS pScrn
-
 #endif
