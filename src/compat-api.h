@@ -41,7 +41,4 @@
 #define CLOSE_SCREEN_ARGS_DECL ScreenPtr pScreen
 #define CLOSE_SCREEN_ARGS pScreen
 
-#define ADJUST_FRAME_ARGS_DECL ScrnInfoPtr arg, int x, int y
-#define ADJUST_FRAME_ARGS(arg, x, y) arg, x, y
-
 #endif

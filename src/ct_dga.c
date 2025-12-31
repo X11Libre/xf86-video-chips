@@ -207,7 +207,7 @@ CHIPS_SetViewport(
 	while (!((hwp->readST01(hwp)) & 0x08)){};
     }
 
-    CHIPSAdjustFrame(ADJUST_FRAME_ARGS(pScrn, x, y));
+    CHIPSAdjustFrame(pScrn, x, y);
     cPtr->DGAViewportStatus = 0;  /* CHIPSAdjustFrame loops until finished */
 }
 

@@ -382,7 +382,7 @@ extern unsigned int ChipsReg32HiQV[];
 
 /* Prototypes */
 
-void CHIPSAdjustFrame(ADJUST_FRAME_ARGS_DECL);
+void CHIPSAdjustFrame(ScrnInfoPtr arg, int x, int y);
 Bool CHIPSSwitchMode(ScrnInfoPtr arg, DisplayModePtr mode);
 
 /* video */

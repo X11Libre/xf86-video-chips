@@ -3315,7 +3315,7 @@ CHIPSEnterVT(ScrnInfoPtr arg)
     chipsHWCursorOn(cPtr, pScrn);
     /* cursor settle delay */
     usleep(50000);
-    CHIPSAdjustFrame(ADJUST_FRAME_ARGS(pScrn, pScrn->frameX0, pScrn->frameY0));
+    CHIPSAdjustFrame(pScrn, pScrn->frameX0, pScrn->frameY0);
     usleep(50000);
     return TRUE;
 }
@@ -3559,7 +3559,7 @@ CHIPSScreenInit(SCREEN_INIT_ARGS_DECL)
     if (!chipsModeInit(pScrn,pScrn->currentMode))
 	return FALSE;
     CHIPSSaveScreen(pScreen,SCREEN_SAVER_ON);
-    CHIPSAdjustFrame(ADJUST_FRAME_ARGS(pScrn, pScrn->frameX0, pScrn->frameY0));
+    CHIPSAdjustFrame(pScrn, pScrn->frameX0, pScrn->frameY0);
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -3983,7 +3983,7 @@ CHIPSSwitchMode(ScrnInfoPtr arg, DisplayModePtr mode)
 
 /* Mandatory */
 void
-CHIPSAdjustFrame(ADJUST_FRAME_ARGS_DECL)
+CHIPSAdjustFrame(ScrnInfoPtr arg, int x, int y)
 {
     SCRN_INFO_PTR(arg);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
