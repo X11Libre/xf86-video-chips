@@ -195,7 +195,7 @@ static void     chipsLoadPalette(ScrnInfoPtr pScrn, int numColors,
 static void     chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors,
 				int *indices, LOCO *colors, VisualPtr pVisual);
 static void chipsSetPanelType(CHIPSPtr cPtr);
-static void chipsBlockHandler(BLOCKHANDLER_ARGS_DECL);
+static void chipsBlockHandler(ScreenPtr arg, pointer pTimeout);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -7009,14 +7009,14 @@ chipsSetPanelType(CHIPSPtr cPtr)
 }
 
 static void
-chipsBlockHandler (BLOCKHANDLER_ARGS_DECL)
+chipsBlockHandler (ScreenPtr arg, pointer pTimeout)
 {
     SCREEN_PTR(arg);
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr    cPtr = CHIPSPTR(pScrn);
 
     pScreen->BlockHandler = cPtr->BlockHandler;
-    (*pScreen->BlockHandler) (BLOCKHANDLER_ARGS);
+    pScreen->BlockHandler(arg, pTimeout);
     pScreen->BlockHandler = chipsBlockHandler;
 
     if(cPtr->VideoTimerCallback) {

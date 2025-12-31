@@ -35,7 +35,4 @@
 
 #define SCREEN_INIT_ARGS_DECL ScreenPtr pScreen, int argc, char **argv
 
-#define BLOCKHANDLER_ARGS_DECL ScreenPtr arg, pointer pTimeout
-#define BLOCKHANDLER_ARGS arg, pTimeout
-
 #endif
