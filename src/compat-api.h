@@ -38,7 +38,4 @@
 #define BLOCKHANDLER_ARGS_DECL ScreenPtr arg, pointer pTimeout
 #define BLOCKHANDLER_ARGS arg, pTimeout
 
-#define CLOSE_SCREEN_ARGS_DECL ScreenPtr pScreen
-#define CLOSE_SCREEN_ARGS pScreen
-
 #endif

@@ -146,7 +146,7 @@ static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool     CHIPSScreenInit(SCREEN_INIT_ARGS_DECL);
 static Bool     CHIPSEnterVT(ScrnInfoPtr arg);
 static void     CHIPSLeaveVT(ScrnInfoPtr arg);
-static Bool     CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL);
+static Bool     CHIPSCloseScreen(ScreenPtr pScreen);
 static void     CHIPSFreeScreen(ScrnInfoPtr arg);
 static ModeStatus CHIPSValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
                                  Bool verbose, int flags);
@@ -4070,7 +4070,7 @@ CHIPSAdjustFrame(ScrnInfoPtr arg, int x, int y)
 
 /* Mandatory */
 static Bool
-CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL)
+CHIPSCloseScreen(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -4108,7 +4108,7 @@ CHIPSCloseScreen(CLOSE_SCREEN_ARGS_DECL)
 
     pScreen->CloseScreen = cPtr->CloseScreen; /*§§§*/
     xf86ClearPrimInitDone(pScrn->entityList[0]);
-    return (*pScreen->CloseScreen)(CLOSE_SCREEN_ARGS);/*§§§*/
+    return pScreen->CloseScreen(pScreen);
 }
 
 /* Optional */
