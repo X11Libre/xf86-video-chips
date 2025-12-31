@@ -52,6 +52,4 @@
 #define VT_FUNC_ARGS_DECL ScrnInfoPtr arg
 #define VT_FUNC_ARGS pScrn
 
-#define XF86_SCRN_ARG(x) (x)
-
 #endif
