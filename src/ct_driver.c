@@ -195,7 +195,7 @@ static void     chipsLoadPalette(ScrnInfoPtr pScrn, int numColors,
 static void     chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors,
 				int *indices, LOCO *colors, VisualPtr pVisual);
 static void chipsSetPanelType(CHIPSPtr cPtr);
-static void chipsBlockHandler(ScreenPtr arg, pointer pTimeout);
+static void chipsBlockHandler(ScreenPtr arg, void *pTimeout);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -691,8 +691,8 @@ static XF86ModuleVersionInfo chipsVersRec =
  */
 _X_EXPORT XF86ModuleData chipsModuleData = { &chipsVersRec, chipsSetup, NULL };
 
-static pointer
-chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+static void*
+chipsSetup(void *module, void *opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
@@ -709,7 +709,7 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * The return value must be non-NULL on success even though there
 	 * is no TearDownProc.
 	 */
-	return (pointer)1;
+	return (void*)1;
     } else {
 	if (errmaj) *errmaj = LDR_ONCEONLY;
 	return NULL;
@@ -1107,7 +1107,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     double real;
     int val, indx;
     const char *s;
-    pointer pVbeModule = NULL;
+    void *pVbeModule = NULL;
 
     vgaHWPtr hwp;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -7003,7 +7003,7 @@ chipsSetPanelType(CHIPSPtr cPtr)
 }
 
 static void
-chipsBlockHandler (ScreenPtr pScreen, pointer pTimeout)
+chipsBlockHandler (ScreenPtr pScreen, void *pTimeout)
 {
     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     CHIPSPtr    cPtr = CHIPSPTR(pScrn);
