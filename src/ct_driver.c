@@ -80,28 +80,11 @@
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
-#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 6
-/* Standard resources are defined here */
-#include "xf86Resources.h"
-
-/* Needed by Resources Access Control (RAC) */
-#include "xf86RAC.h"
-#endif
-
 /* All drivers using the vgahw module need this */
 #include "vgaHW.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
-
-#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 6
-#define USE_MIBANK 1
-#endif
-
-/* All drivers using the mi banking wrapper need this */
-#ifdef USE_MIBANK
-#include "mibank.h"
-#endif
 
 /* All drivers using the mi colormap manipulation need this */
 #include "micmap.h"
@@ -1163,11 +1146,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     vgaHWSetStdFuncs(hwp);
 #endif
     vgaHWGetIOBase(hwp);
-#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 12
-    cPtr->PIOBase = hwp->PIOOffset;
-#else
     cPtr->PIOBase = 0;
-#endif
 
     /*
      * Must allow ensure that storage for the 2nd set of vga registers is
@@ -3664,87 +3643,6 @@ CHIPSScreenInit(ScreenPtr pScreen, int argc, char **argv)
 
     cPtr->HWCursorShown = FALSE;
 
-#ifdef USE_MIBANK
-    if (!(cPtr->Flags & ChipsLinearSupport)) {
-	miBankInfoPtr pBankInfo;
-
-	/* Setup the vga banking variables */
-	pBankInfo = (miBankInfoPtr)XNFcallocarray(sizeof(miBankInfoRec),1);
-	if (pBankInfo == NULL)
-	    return FALSE;
-
-#if defined(__arm__)
-	cPtr->Bank = -1;
-#endif
-	pBankInfo->pBankA = hwp->Base;
-	pBankInfo->pBankB = (unsigned char *)hwp->Base + 0x08000;
-	pBankInfo->BankSize = 0x08000;
-	pBankInfo->nBankDepth = (pScrn->depth == 4) ? 1 : pScrn->depth;
-
-	if (IS_HiQV(cPtr)) {
-	    pBankInfo->pBankB = hwp->Base;
-	    pBankInfo->BankSize = 0x10000;
-	    if (pScrn->bitsPerPixel < 8) {
-		pBankInfo->SetSourceBank =
-			(miBankProcPtr)CHIPSHiQVSetReadWritePlanar;
-		pBankInfo->SetDestinationBank =
-			(miBankProcPtr)CHIPSHiQVSetReadWritePlanar;
-		pBankInfo->SetSourceAndDestinationBanks =
-			(miBankProcPtr)CHIPSHiQVSetReadWritePlanar;
-	    } else {
-		pBankInfo->SetSourceBank =
-			(miBankProcPtr)CHIPSHiQVSetReadWrite;
-		pBankInfo->SetDestinationBank =
-			(miBankProcPtr)CHIPSHiQVSetReadWrite;
-		pBankInfo->SetSourceAndDestinationBanks =
-			(miBankProcPtr)CHIPSHiQVSetReadWrite;
-	    }
-	} else {
-	    if (IS_Wingine(cPtr)) {
-		if (pScrn->bitsPerPixel < 8) {
-		    pBankInfo->SetSourceBank =
-			    (miBankProcPtr)CHIPSWINSetReadPlanar;
-		    pBankInfo->SetDestinationBank =
-			    (miBankProcPtr)CHIPSWINSetWritePlanar;
-		    pBankInfo->SetSourceAndDestinationBanks =
-			    (miBankProcPtr)CHIPSWINSetReadWritePlanar;
-		} else {
-		    pBankInfo->SetSourceBank = (miBankProcPtr)CHIPSWINSetRead;
-		    pBankInfo->SetDestinationBank =
-			    (miBankProcPtr)CHIPSWINSetWrite;
-		    pBankInfo->SetSourceAndDestinationBanks =
-			    (miBankProcPtr)CHIPSWINSetReadWrite;
-		}
-	    } else {
-		if (pScrn->bitsPerPixel < 8) {
-		    pBankInfo->SetSourceBank =
-			    (miBankProcPtr)CHIPSSetReadPlanar;
-		    pBankInfo->SetDestinationBank =
-			    (miBankProcPtr)CHIPSSetWritePlanar;
-		    pBankInfo->SetSourceAndDestinationBanks =
-			    (miBankProcPtr)CHIPSSetReadWritePlanar;
-		} else {
-		    pBankInfo->SetSourceBank = (miBankProcPtr)CHIPSSetRead;
-		    pBankInfo->SetDestinationBank =
-			    (miBankProcPtr)CHIPSSetWrite;
-		    pBankInfo->SetSourceAndDestinationBanks =
-			    (miBankProcPtr)CHIPSSetReadWrite;
-		}
-	    }
-	}
-	if (!miInitializeBanking(pScreen, pScrn->virtualX, pScrn->virtualY,
-				 pScrn->displayWidth, pBankInfo)) {
-	    free(pBankInfo);
-	    pBankInfo = NULL;
-	    return FALSE;
-	}
-	xf86SetBackingStore(pScreen);
-
-	/* Initialise cursor functions */
-	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
-
-    } else
-#endif /* USE_MIBANK */
     {
     /* !!! Only support linear addressing for now. This might change */
 	/* Setup pointers to free space in video ram */
@@ -4158,9 +4056,6 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     if (!pScrn->vtSema)
 	return;
 
-#if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 8
-    xf86EnableAccess(pScrn);
-#endif
     switch (PowerManagementMode) {
     case DPMSModeOn:
 	/* Screen: On; HSync: On, VSync: On */
