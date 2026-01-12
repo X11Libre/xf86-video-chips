@@ -35,7 +35,7 @@ libct_accelhi_la_CFLAGS = @XORG_CFLAGS@ -DCHIPS_MMIO -DCHIPS_HIQV
 AM_CFLAGS = $(BASE_CFLAGS) $(XORG_CFLAGS)
 chips_drv_la_LTLIBRARIES = chips_drv.la
 chips_drv_la_LDFLAGS = -module -avoid-version
-chips_drv_ladir = @moduledir@/drivers
+chips_drv_ladir = @xlibre_video_drivers_dir@
 chips_drv_la_LIBADD = $(noinst_LTLIBRARIES)
 
 chips_drv_la_SOURCES = \
