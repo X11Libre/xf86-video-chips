@@ -30,7 +30,8 @@ AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR(.)
 
-AC_PROG_CC_STDC
+# Autoconf 2.70 and later pick the C standard in AC_PROG_CC.
+m4_version_prereq([2.70], [AC_PROG_CC], [AC_PROG_CC_STDC])
 
 # Initialize Automake
 AM_INIT_AUTOMAKE([foreign dist-xz])
