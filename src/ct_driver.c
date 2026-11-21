@@ -453,6 +453,7 @@ static DisplayModeRec ChipsNTSCMode = {
 #define CHIPS_MAJOR_VERSION PACKAGE_VERSION_MAJOR
 #define CHIPS_MINOR_VERSION PACKAGE_VERSION_MINOR
 #define CHIPS_PATCHLEVEL PACKAGE_VERSION_PATCHLEVEL
+#define CHIPS_VERSION_SUFFIX PACKAGE_VERSION_SUFFIX
 
 #ifndef _XF86_PCIINFO_H
 #define PCI_VENDOR_CHIPSTECH		0x102C
@@ -673,6 +674,10 @@ static XF86ModuleVersionInfo chipsVersRec =
  * Its name has to be the driver name followed by ModuleData
  */
 _X_EXPORT XF86ModuleData chipsModuleData = { &chipsVersRec, chipsSetup, NULL };
+
+#ifdef XF86_MODULE_VERSION_SUFFIX
+XF86_MODULE_VERSION_SUFFIX(chips, CHIPS_VERSION_SUFFIX);
+#endif
 
 static void*
 chipsSetup(void *module, void *opts, int *errmaj, int *errmin)
