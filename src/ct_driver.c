@@ -1914,7 +1914,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    /* Only alter the memory clock if the desired memory clock differs
 	     * by 50kHz from the one currently being used.
 	     */
-	    if (abs(mclk - MemClk->ProbedClk) > 50) {
+	    if (abs(mclk - (int) MemClk->ProbedClk) > 50) {
 		unsigned char vclk[3];
 
 		MemClk->Clk = mclk;
@@ -4959,7 +4959,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ChipsNew->XR[0x80] &= ~0x80;
     }
 
-    if (abs(cPtr->MemClock.Clk - cPtr->MemClock.ProbedClk) > 50) {
+    if (abs((int) cPtr->MemClock.Clk - (int) cPtr->MemClock.ProbedClk) > 50) {
 	/* set mem clk */
 	ChipsNew->XR[0xCC] = cPtr->MemClock.xrCC;
 	ChipsNew->XR[0xCD] = cPtr->MemClock.xrCD;
@@ -5832,7 +5832,7 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	     */
 
 	    if (ChipsNew->XR[0x2C]  < abs((cPtr->PanelSize.VTotal -
-		    cPtr->PanelSize.VRetraceStart - tmp - 1) -
+		    cPtr->PanelSize.VRetraceStart - (int) tmp - 1) -
 		    ChipsNew->XR[0x2C]))
 	        ChipsNew->XR[0x2F] |= 0x80;   /* turn FLM delay off */
 	    ChipsNew->XR[0x2C] = lcdVTotal - lcdVRetraceStart - tmp;
@@ -6734,7 +6734,7 @@ chipsTestDACComp(ScrnInfoPtr pScrn, unsigned char a, unsigned char b,
     hwp->writeDacData(hwp, a);                /* set pattern */
     hwp->writeDacData(hwp, b);
     hwp->writeDacData(hwp, c);
-    while (!(hwp->readST01(hwp)) & 0x01){};   /* wait for hsync to end  */
+    while (!((hwp->readST01(hwp)) & 0x01)){}; /* wait for new hsync     */
     while ((hwp->readST01(hwp)) & 0x01){};    /* wait for hsync to end  */
     type = hwp->readST00(hwp);                /* read comparator        */
     return (type & 0x10);
